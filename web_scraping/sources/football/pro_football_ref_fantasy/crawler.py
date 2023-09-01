@@ -3,12 +3,11 @@ from selenium.webdriver.firefox.options import Options
 import time, pathlib
 
 
-class ProFootballRefCrawler:
+class ProFootballRefFantasyCrawler:
 
     def __init__(self):
         self.driver = self.initialize_driver()
         self.current_path = pathlib.Path(__file__).parent.resolve()
-        self.source_url = "https://www.pro-football-reference.com"
 
     def initialize_driver(self):
         firefox_options = Options()
@@ -17,23 +16,14 @@ class ProFootballRefCrawler:
         return webdriver.Firefox(options=firefox_options)
     
     def crawl(self):
-        self.links = self.get_boxscores(2023, 2024)
-        [print(link) for link in self.links]
-
-    def get_boxscores(self, begin=2023, end=2024):
-        boxscores = []
-        for year in range(begin, end):
-
-            self.driver.get(f"{self.source_url}/years/{year}/games.htm")
-            elements = self.driver.find_elements_by_link_text("boxscore")
-
-            boxscores += [element.get_attribute("href") for element in elements]
-
-        return boxscores
+        self.links = []
+        for year in range(2023, 2024):
+            self.links.append(f"https://www.pro-football-reference.com/years/{year}/fantasy.htm")        
 
     def save_to_datalake(self, limit=5):
         for link in self.links:
-            file_path = f"{str(self.current_path).replace('web_scraping', 'datalake')}\\{link.split('/')[-1]}"
+            file_name = f"fantasy_rankings_{link.split('/')[-2]}"
+            file_path = f"{str(self.current_path).replace('web_scraping', 'datalake')}\\{file_name}.html"
 
             if pathlib.Path(file_path).is_file():
                 continue
@@ -46,6 +36,6 @@ class ProFootballRefCrawler:
 
 
 if __name__ == "__main__":
-    crawler = ProFootballRefCrawler()
+    crawler = ProFootballRefFantasyCrawler()
     crawler.crawl()
     crawler.save_to_datalake()
