@@ -12,7 +12,7 @@ class ProFootballRefCrawler:
 
     def initialize_driver(self):
         firefox_options = Options()
-        firefox_options.add_argument("--headless")
+        # firefox_options.add_argument("--headless")
         firefox_options.add_argument("-private")
         return webdriver.Firefox(options=firefox_options)
     
