@@ -4,6 +4,12 @@ import time, datetime
 import pathlib, glob
 
 
+def flatten_links(cell):
+    if cell[1] is None:
+        return cell[0]
+    else:
+        return f"{cell[0]}^{cell[1]}"
+
 class ProFootballRefParser():
 
     def __init__(self, file_name="*", tables_to_extract="all"):
@@ -13,10 +19,23 @@ class ProFootballRefParser():
         self.tables = {
             "game_details": [],
             "team_stats": [],
-            "passing_stats": [],
-            "rushing_stats": [],
-            "receiving_stats": [],
-            "defense_stats": [],
+            "passing_stats": {
+                "basic": [],
+                "advanced": []
+            },
+            "rushing_stats": {
+                "basic": [],
+                "advanced": []
+            },
+            "receiving_stats": {
+                "basic": [],
+                "advanced": []
+            },
+            "fumble_stats": [],
+            "defense_stats": {
+                "basic": [],
+                "advanced": []
+            },
             "return_stats": [],
             "kicking_stats": [],
             "punting_stats": [],
@@ -30,9 +49,11 @@ class ProFootballRefParser():
             self.game_id = match_file.split(".")[0].split("\\")[-1]
             self.extract_game_details(file_name=match_file)
             self.extract_team_stats(file_name=match_file)
-            passing_stats = self.extract_passing_stats(file_name=match_file)
-            rushing_stats = self.extract_rushing_stats(file_name=match_file)
-            receiving_stats = self.extract_receiving_stats(file_name=match_file)
+            self.extract_passing_stats(file_name=match_file)
+            self.extract_rushing_stats(file_name=match_file)
+            self.extract_receiving_stats(file_name=match_file)
+            for stat_type in ["passing", "rushing", "receiving"]:
+                self.extract_offensive_stats(stat_type=stat_type, file_name=match_file)
             defense_stats = self.extract_defense_stats(file_name=match_file)
             return_stats = self.extract_return_stats(file_name=match_file)
             kicking_stats = self.extract_kicking_stats(file_name=match_file)
@@ -115,6 +136,8 @@ class ProFootballRefParser():
         team_stats = pd.read_html(file_name, match="Team Stats")[0]
         stat_keys = self.clean_header(team_stats.iloc[:,0].values.tolist())
         away_team_stats = team_stats.iloc[:,1].values.tolist()
+        away_team_abbreviation = team_stats.columns.values[1]
+        home_team_abbreviation = team_stats.columns.values[2]
         home_team_stats = team_stats.iloc[:,2].values.tolist()
 
         away_team_dict = {
@@ -122,6 +145,7 @@ class ProFootballRefParser():
             "game_date": game_date,
             "team_id": away_team_id,
             "team_name": away_team_name,
+            "team_abbreviation": away_team_abbreviation,
             "team_score": away_team_score,
             "coach_id": away_coach_id,
             "coach_name": away_coach_name,
@@ -134,6 +158,7 @@ class ProFootballRefParser():
             "game_date": game_date,
             "team_id": home_team_id,
             "team_name": home_team_name,
+            "team_abbreviation": home_team_abbreviation,
             "team_score": home_team_score,
             "coach_id": home_coach_id,
             "coach_name": home_coach_name,
@@ -157,12 +182,530 @@ class ProFootballRefParser():
         passing_tables = pd.read_html(file_name, match="Passing", extract_links="body")
         basic_passing = passing_tables[0].iloc[:,:11]
 
-        print(basic_passing)
+        basic_passing.columns = basic_passing.columns.map('_'.join).str.strip('_')
+        basic_passing = basic_passing.rename(
+            columns={
+                "Unnamed: 0_level_0_Player": "player",
+                "Unnamed: 1_level_0_Tm": "team",
+                "Passing_Cmp": "completions",
+                "Passing_Att": "attempts",
+                "Passing_Yds": "yards",
+                "Passing_TD": "touchdowns",
+                "Passing_Int": "interceptions",
+                "Passing_Sk": "sacked",
+                "Passing_Yds.1": "sacked_yards",
+                "Passing_Lng": "longest_completion",
+                "Passing_Rate": "passer_rating"
+            }
+        )
+        basic_passing = basic_passing.applymap(flatten_links)
+
+        columns_to_convert = [
+            "completions",
+            "attempts",
+            "yards",
+            "touchdowns",
+            "interceptions",
+            "sacked",
+            "sacked_yards",
+            "longest_completion",
+            "passer_rating"
+        ]
+
+        for column in columns_to_convert:
+            basic_passing[column] = basic_passing[column].apply(pd.to_numeric, errors="coerce")
+
+        basic_passing = basic_passing[basic_passing["attempts"] > 0]
+        self.tables["passing_stats"]["basic"].append(basic_passing)
+
+        if len(passing_tables) == 1:
+            return
+        
+        advanced_passing = passing_tables[1]
+        advanced_passing = advanced_passing.applymap(flatten_links)
+
+        advanced_columns = {
+            "Player": "player",
+            "Tm": "team",
+            "Cmp": "completions",
+            "Att": "attempts",
+            "Yds": "yards",
+            "1D": "first_downs",
+            "1D%": "first_downs_per_pass_percentage",
+            "IAY": "intended_air_yards",
+            "IAY/PA": "intended_air_yards_per_pass",
+            "CAY": "completed_air_yards",
+            "CAY/Cmp": "completed_air_yards_per_completion",
+            "CAY/PA": "completed_air_yards_per_attempt",
+            "YAC": "yards_after_catch",
+            "YAC/Cmp": "yards_after_catch_per_completion",
+            "Drops": "drops",
+            "Drop%": "drop_percentage_per_attempt",
+            "BadTh": "bad_throws",
+            "Bad%": "bad_throw_percentage",
+            "Sk": "sacked",
+            "Bltz": "blitzed",
+            "Hrry": "hurried",
+            "Hits": "hits",
+            "Prss": "times_pressured",
+            "Prss%": "percent_pressured_per_dropback",
+            "Scrm": "scrambles",
+            "Yds/Scr": "yards_per_scramble"
+        }
+
+        advanced_passing = advanced_passing.rename(
+            columns=advanced_columns
+        )
+
+        columns_to_convert = [
+            "completions",
+            "attempts",
+            "yards",
+            "first_downs",
+            "first_downs_per_pass_percentage",
+            "intended_air_yards",
+            "intended_air_yards_per_pass",
+            "completed_air_yards",
+            "completed_air_yards_per_completion",
+            "completed_air_yards_per_attempt",
+            "yards_after_catch",
+            "yards_after_catch_per_completion",
+            "drops",
+            "drop_percentage_per_attempt",
+            "bad_throws",
+            "bad_throw_percentage",
+            "sacked",
+            "blitzed",
+            "hurried",
+            "hits",
+            "times_pressured",
+            "percent_pressured_per_dropback",
+            "scrambles",
+            "yards_per_scramble"
+        ]
+        for column in columns_to_convert:
+            advanced_passing[column] = advanced_passing[column].apply(pd.to_numeric, errors="coerce")
+
+        advanced_passing = advanced_passing[advanced_passing["attempts"] > 0]
+        self.tables["passing_stats"]["advanced"].append(advanced_passing)
 
     def extract_rushing_stats(self, file_name=""):
-        pass
+        game_id = self.game_id
+        game_date = self.get_game_date(game_id=self.game_id)
+
+        rushing_tables = pd.read_html(file_name, match="Rushing", extract_links="body")
+        basic_rushing = rushing_tables[0].iloc[:,[0,1,11,12,13,14]]
+
+        basic_rushing.columns = basic_rushing.columns.map('_'.join).str.strip('_')
+        basic_rushing = basic_rushing.rename(
+            columns={
+                "Unnamed: 0_level_0_Player": "player",
+                "Unnamed: 1_level_0_Tm": "team",
+                "Rushing_Att": "attempts",
+                "Rushing_Yds": "yards",
+                "Rushing_TD": "touchdowns",
+                "Rushing_Lng": "longest_rush",
+            }
+        )
+        basic_rushing = basic_rushing.applymap(flatten_links)
+
+        columns_to_convert = [
+            "attempts",
+            "yards",
+            "touchdowns",
+            "longest_rush"
+        ]
+
+        for column in columns_to_convert:
+            basic_rushing[column] = basic_rushing[column].apply(pd.to_numeric, errors="coerce")
+
+        basic_rushing = basic_rushing[basic_rushing["attempts"] > 0]
+        self.tables["rushing_stats"]["basic"].append(basic_rushing)
+
+        if len(rushing_tables) == 1:
+            return
+        
+        advanced_rushing = rushing_tables[1]
+        advanced_rushing = advanced_rushing.applymap(flatten_links)
+
+        advanced_columns = {
+            "Player": "player",
+            "Tm": "team",
+            "Att": "attempts",
+            "Yds": "yards",
+            "TD": "touchdowns",
+            "1D": "first_downs",
+            "YBC": "yards_before_contact",
+            "YBC/Att": "yards_before_contact_per_attempt",
+            "YAC": "yards_after_contact",
+            "YAC/Att": "yards_after_contact_per_attempt",
+            "BrkTkl": "broken_tackles",
+            "Att/Br": "attempts_per_broken_tackle",
+        }
+
+        advanced_rushing = advanced_rushing.rename(
+            columns=advanced_columns
+        )
+
+        columns_to_convert = [
+            "attempts",
+            "yards",
+            "touchdowns",
+            "first_downs",
+            "yards_before_contact",
+            "yards_before_contact_per_attempt",
+            "yards_after_contact",
+            "yards_after_contact_per_attempt",
+            "broken_tackles",
+            "attempts_per_broken_tackle"
+        ]
+
+        for column in columns_to_convert:
+            advanced_rushing[column] = advanced_rushing[column].apply(pd.to_numeric, errors="coerce")
+        
+        advanced_rushing = advanced_rushing[advanced_rushing["attempts"] > 0]
+        self.tables["rushing_stats"]["advanced"].append(advanced_rushing)
 
     def extract_receiving_stats(self, file_name=""):
+        game_id = self.game_id
+        game_date = self.get_game_date(game_id=self.game_id)
+
+        receiving_tables = pd.read_html(file_name, match="Receiving", extract_links="body")
+        basic_receiving = receiving_tables[0].iloc[:,[0,1,15,16,17,18,19]]
+
+        basic_receiving.columns = basic_receiving.columns.map('_'.join).str.strip('_')
+        basic_receiving = basic_receiving.rename(
+            columns={
+                "Unnamed: 0_level_0_Player": "player",
+                "Unnamed: 1_level_0_Tm": "team",
+                "Receiving_Tgt": "targets",
+                "Receiving_Rec": "receptions",
+                "Receiving_Yds": "yards",
+                "Receiving_TD": "touchdowns",
+                "Receiving_Lng": "longest_reception",
+            }
+        )
+        basic_receiving = basic_receiving.applymap(flatten_links)
+
+        columns_to_convert = [
+            "targets",
+            "receptions",
+            "yards",
+            "touchdowns",
+            "longest_reception"
+        ]
+
+        for column in columns_to_convert:
+            basic_receiving[column] = basic_receiving[column].apply(pd.to_numeric, errors="coerce")
+
+        basic_receiving = basic_receiving[basic_receiving["targets"] > 0]
+        self.tables["receiving_stats"]["basic"].append(basic_receiving)
+
+        if len(receiving_tables) == 1:
+            return
+        
+        advanced_receiving = receiving_tables[1]
+        advanced_receiving = advanced_receiving.applymap(flatten_links)
+
+        advanced_columns = {
+            "Player": "player",
+            "Tm": "team",
+            "Tgt": "targets",
+            "Rec": "receptions",
+            "Yds": "yards",
+            "TD": "touchdowns",
+            "1D": "first_downs",
+            "YBC": "yards_before_catch",
+            "YBC/R": "yards_before_catch_per_reception",
+            "YAC": "yards_after_catch",
+            "YAC/R": "yards_after_catch_per_reception",
+            "ADOT": "avg_depth_of_target",
+            "BrkTkl": "broken_tackles",
+            "Rec/Br": "receptions_per_broken_tackle",
+            "Drop": "drops",
+            "Drop%": "drop_percentage",
+            "Int": "interceptions_when_targeted",
+            "Rat": "qb_rating_when_targeted"
+        }
+
+        advanced_receiving = advanced_receiving.rename(
+            columns=advanced_columns
+        )
+
+        columns_to_convert = [
+            "targets",
+            "receptions",
+            "yards",
+            "touchdowns",
+            "first_downs",
+            "yards_before_catch",
+            "yards_before_catch_per_reception",
+            "yards_after_catch",
+            "yards_after_catch_per_reception",
+            "avg_depth_of_target",
+            "broken_tackles",
+            "receptions_per_broken_tackle",
+            "drops",
+            "drop_percentage",
+            "interceptions_when_targeted",
+            "qb_rating_when_targeted"
+        ]
+
+        for column in columns_to_convert:
+            advanced_receiving[column] = advanced_receiving[column].apply(pd.to_numeric, errors="coerce")
+        
+        advanced_receiving = advanced_receiving[advanced_receiving["targets"] > 0]
+        self.tables["receiving_stats"]["advanced"].append(advanced_receiving)
+
+    def extract_offensive_stats(self, stat_type, file_name=""):
+        game_id = self.game_id
+        game_date = self.get_game_date(game_id=self.game_id)
+
+        match_dict = {
+            "passing": "Passing",
+            "rushing": "Rushing",
+            "receiving": "Receiving"
+        }
+
+        slice_dict = {
+            "passing": [0,1,2,3,4,5,6,7,8,9,10],
+            "rushing": [0,1,11,12,13,14],
+            "receiving": [0,1,15,16,17,18,19]
+        }
+
+        basic_columns_dict = {
+            "passing": {
+                "Unnamed: 0_level_0_Player": "player",
+                "Unnamed: 1_level_0_Tm": "team",
+                "Passing_Cmp": "completions",
+                "Passing_Att": "attempts",
+                "Passing_Yds": "yards",
+                "Passing_TD": "touchdowns",
+                "Passing_Int": "interceptions",
+                "Passing_Sk": "sacked",
+                "Passing_Yds.1": "sacked_yards",
+                "Passing_Lng": "longest_completion",
+                "Passing_Rate": "passer_rating"
+            },
+            "rushing": {
+                "Unnamed: 0_level_0_Player": "player",
+                "Unnamed: 1_level_0_Tm": "team",
+                "Rushing_Att": "attempts",
+                "Rushing_Yds": "yards",
+                "Rushing_TD": "touchdowns",
+                "Rushing_Lng": "longest_rush",
+            },
+            "receiving": {
+                "Unnamed: 0_level_0_Player": "player",
+                "Unnamed: 1_level_0_Tm": "team",
+                "Receiving_Tgt": "targets",
+                "Receiving_Rec": "receptions",
+                "Receiving_Yds": "yards",
+                "Receiving_TD": "touchdowns",
+                "Receiving_Lng": "longest_reception",
+            }
+        }
+
+        advanced_columns_dict = {
+            "passing": {
+                "Player": "player",
+                "Tm": "team",
+                "Cmp": "completions",
+                "Att": "attempts",
+                "Yds": "yards",
+                "1D": "first_downs",
+                "1D%": "first_downs_per_pass_percentage",
+                "IAY": "intended_air_yards",
+                "IAY/PA": "intended_air_yards_per_pass",
+                "CAY": "completed_air_yards",
+                "CAY/Cmp": "completed_air_yards_per_completion",
+                "CAY/PA": "completed_air_yards_per_attempt",
+                "YAC": "yards_after_catch",
+                "YAC/Cmp": "yards_after_catch_per_completion",
+                "Drops": "drops",
+                "Drop%": "drop_percentage_per_attempt",
+                "BadTh": "bad_throws",
+                "Bad%": "bad_throw_percentage",
+                "Sk": "sacked",
+                "Bltz": "blitzed",
+                "Hrry": "hurried",
+                "Hits": "hits",
+                "Prss": "times_pressured",
+                "Prss%": "percent_pressured_per_dropback",
+                "Scrm": "scrambles",
+                "Yds/Scr": "yards_per_scramble"
+            },
+            "rushing": {
+                "Player": "player",
+                "Tm": "team",
+                "Att": "attempts",
+                "Yds": "yards",
+                "TD": "touchdowns",
+                "1D": "first_downs",
+                "YBC": "yards_before_contact",
+                "YBC/Att": "yards_before_contact_per_attempt",
+                "YAC": "yards_after_contact",
+                "YAC/Att": "yards_after_contact_per_attempt",
+                "BrkTkl": "broken_tackles",
+                "Att/Br": "attempts_per_broken_tackle",
+            },
+            "receiving": {
+                "Player": "player",
+                "Tm": "team",
+                "Tgt": "targets",
+                "Rec": "receptions",
+                "Yds": "yards",
+                "TD": "touchdowns",
+                "1D": "first_downs",
+                "YBC": "yards_before_catch",
+                "YBC/R": "yards_before_catch_per_reception",
+                "YAC": "yards_after_catch",
+                "YAC/R": "yards_after_catch_per_reception",
+                "ADOT": "avg_depth_of_target",
+                "BrkTkl": "broken_tackles",
+                "Rec/Br": "receptions_per_broken_tackle",
+                "Drop": "drops",
+                "Drop%": "drop_percentage",
+                "Int": "interceptions_when_targeted",
+                "Rat": "qb_rating_when_targeted"
+            }
+        }
+
+        basic_columns_to_convert_dict = {
+            "passing": [
+                "completions",
+                "attempts",
+                "yards",
+                "touchdowns",
+                "interceptions",
+                "sacked",
+                "sacked_yards",
+                "longest_completion",
+                "passer_rating"
+            ],
+            "rushing": [
+                "attempts",
+                "yards",
+                "touchdowns",
+                "longest_rush"
+            ],
+            "receiving": [
+                "targets",
+                "receptions",
+                "yards",
+                "touchdowns",
+                "longest_reception"
+            ]
+        }
+
+        advanced_columns_to_convert_dict = {
+            "passing": [
+                "completions",
+                "attempts",
+                "yards",
+                "first_downs",
+                "first_downs_per_pass_percentage",
+                "intended_air_yards",
+                "intended_air_yards_per_pass",
+                "completed_air_yards",
+                "completed_air_yards_per_completion",
+                "completed_air_yards_per_attempt",
+                "yards_after_catch",
+                "yards_after_catch_per_completion",
+                "drops",
+                "drop_percentage_per_attempt",
+                "bad_throws",
+                "bad_throw_percentage",
+                "sacked",
+                "blitzed",
+                "hurried",
+                "hits",
+                "times_pressured",
+                "percent_pressured_per_dropback",
+                "scrambles",
+                "yards_per_scramble"
+            ],
+            "rushing": [
+                "attempts",
+                "yards",
+                "touchdowns",
+                "first_downs",
+                "yards_before_contact",
+                "yards_before_contact_per_attempt",
+                "yards_after_contact",
+                "yards_after_contact_per_attempt",
+                "broken_tackles",
+                "attempts_per_broken_tackle"
+            ],
+            "receiving": [
+                "targets",
+                "receptions",
+                "yards",
+                "touchdowns",
+                "first_downs",
+                "yards_before_catch",
+                "yards_before_catch_per_reception",
+                "yards_after_catch",
+                "yards_after_catch_per_reception",
+                "avg_depth_of_target",
+                "broken_tackles",
+                "receptions_per_broken_tackle",
+                "drops",
+                "drop_percentage",
+                "interceptions_when_targeted",
+                "qb_rating_when_targeted"
+            ]
+        }
+
+        table_keys = {
+            "passing": "passing_stats",
+            "rushing": "rushing_stats",
+            "receiving": "receiving_stats"
+        }
+
+        tables = pd.read_html(file_name, match=match_dict[stat_type], extract_links="body")
+        basic_table = tables[0].iloc[:, slice_dict[stat_type]]
+        basic_table.columns = basic_table.columns.map('_'.join).str.strip('_')
+        basic_table = basic_table.rename(columns=basic_columns_dict[stat_type])
+        basic_table = basic_table.applymap(flatten_links)
+
+        for column in basic_columns_to_convert_dict[stat_type]:
+            basic_table[column] = basic_table[column].apply(pd.to_numeric, errors="coerce")
+
+        if stat_type == "passing":
+            condition = basic_table["attempts"] > 0
+        elif stat_type == "rushing":
+            condition = basic_table["attempts"] > 0
+        elif stat_type == "receiving":
+            condition = basic_table["targets"] > 0
+        basic_table = basic_table[condition]
+        self.tables[table_keys[stat_type]]["basic"].append(basic_table)
+
+        print(basic_table)
+
+        if len(tables) == 1:
+            return
+
+        advanced_table = tables[1].applymap(flatten_links)
+        advanced_table = advanced_table.rename(columns=advanced_columns_dict[stat_type])
+
+        for column in advanced_columns_to_convert_dict[stat_type]:
+            advanced_table[column] = advanced_table[column].apply(pd.to_numeric, errors="coerce")
+
+        if stat_type == "passing":
+            condition = advanced_table["attempts"] > 0
+        elif stat_type == "rushing":
+            condition = advanced_table["attempts"] > 0
+        elif stat_type == "receiving":
+            condition = advanced_table["targets"] > 0
+        advanced_table = advanced_table[condition]
+
+        print(advanced_table)
+
+        self.tables[table_keys[stat_type]]["advanced"].append(advanced_table)
+
+
+    def extract_fumble_stats(self, file_name=""):
         pass
 
     def extract_defense_stats(self, file_name=""):

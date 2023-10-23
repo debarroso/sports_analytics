@@ -1,6 +1,7 @@
 from selenium import webdriver
 from selenium.webdriver.firefox.options import Options
 import time, pathlib
+import datetime
 
 
 class ProFootballRefCrawler:
@@ -31,18 +32,30 @@ class ProFootballRefCrawler:
 
         return boxscores
 
+    def get_game_date(self, link):
+        game_id = link.split("/")[-1][:-4]
+        return f"{game_id[0:4]}-{game_id[4:6]}-{game_id[6:8]}"
+
     def save_to_datalake(self, limit=5):
         for link in self.links:
-            file_path = f"{str(self.current_path).replace('web_scraping', 'datalake')}\\{link.split('/')[-1]}"
+            today = datetime.date.today()
+            date_string = self.get_game_date(link)
+            year = int(date_string.split("-")[0])
+            month = int(date_string.split("-")[1])
+            day = int(date_string.split("-")[2])
+            game_date = datetime.date(year, month, day)
 
-            if pathlib.Path(file_path).is_file():
-                continue
+            if today - datetime.timedelta(days=3) >= game_date:
+                file_path = f"{str(self.current_path).replace('web_scraping', 'datalake')}\\{link.split('/')[-1]}"
 
-            self.driver.get(link)
-            with open(file_path, mode='w', encoding='utf-8') as fp:
-                fp.write(self.driver.page_source)
+                if pathlib.Path(file_path).is_file():
+                    continue
 
-            time.sleep(limit)
+                self.driver.get(link)
+                with open(file_path, mode='w', encoding='utf-8') as fp:
+                    fp.write(self.driver.page_source)
+
+                time.sleep(limit)
 
 
 if __name__ == "__main__":
