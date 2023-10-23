@@ -31,7 +31,9 @@ class ProFootballRefParser():
                 "basic": [],
                 "advanced": []
             },
-            "fumble_stats": [],
+            "fumble_stats": {
+                "basic": []
+            },
             "defense_stats": {
                 "basic": [],
                 "advanced": []
@@ -49,7 +51,7 @@ class ProFootballRefParser():
             self.game_id = match_file.split(".")[0].split("\\")[-1]
             self.extract_game_details(file_name=match_file)
             self.extract_team_stats(file_name=match_file)
-            for stat_type in ["passing", "rushing", "receiving"]:
+            for stat_type in ["passing", "rushing", "receiving", "fumbles"]:
                 self.extract_offensive_stats(stat_type=stat_type, file_name=match_file)
             defense_stats = self.extract_defense_stats(file_name=match_file)
             return_stats = self.extract_return_stats(file_name=match_file)
@@ -179,13 +181,15 @@ class ProFootballRefParser():
         match_dict = {
             "passing": "Passing",
             "rushing": "Rushing",
-            "receiving": "Receiving"
+            "receiving": "Receiving",
+            "fumbles": "Passing, Rushing, & Receiving"
         }
 
         slice_dict = {
             "passing": [0,1,2,3,4,5,6,7,8,9,10],
             "rushing": [0,1,11,12,13,14],
-            "receiving": [0,1,15,16,17,18,19]
+            "receiving": [0,1,15,16,17,18,19],
+            "fumbles": [0,1,20,21]
         }
 
         basic_columns_dict = {
@@ -218,6 +222,12 @@ class ProFootballRefParser():
                 "Receiving_Yds": "yards",
                 "Receiving_TD": "touchdowns",
                 "Receiving_Lng": "longest_reception",
+            },
+            "fumbles": {
+                "Unnamed: 0_level_0_Player": "player",
+                "Unnamed: 1_level_0_Tm": "team",
+                "Fumbles_Fmb": "fumbles",
+                "Fumbles_FL": "fumbles_lost"
             }
         }
 
@@ -310,6 +320,10 @@ class ProFootballRefParser():
                 "yards",
                 "touchdowns",
                 "longest_reception"
+            ],
+            "fumbles": [
+                "fumbles",
+                "fumbles_lost"
             ]
         }
 
@@ -375,7 +389,8 @@ class ProFootballRefParser():
         table_keys = {
             "passing": "passing_stats",
             "rushing": "rushing_stats",
-            "receiving": "receiving_stats"
+            "receiving": "receiving_stats",
+            "fumbles": "fumble_stats"
         }
 
         tables = pd.read_html(file_name, match=match_dict[stat_type], extract_links="body")
@@ -393,12 +408,14 @@ class ProFootballRefParser():
             condition = basic_table["attempts"] > 0
         elif stat_type == "receiving":
             condition = basic_table["targets"] > 0
+        elif stat_type == "fumbles":
+            condition = basic_table["fumbles"] > 0
         basic_table = basic_table[condition]
-        self.tables[table_keys[stat_type]]["basic"].append(basic_table)
 
-        print(basic_table)
+        if not basic_table.empty:
+            self.tables[table_keys[stat_type]]["basic"].append(basic_table)
 
-        if len(tables) == 1:
+        if len(tables) == 1 or stat_type == "fumbles":
             return
 
         advanced_table = tables[1].applymap(flatten_links)
@@ -415,13 +432,8 @@ class ProFootballRefParser():
             condition = advanced_table["targets"] > 0
         advanced_table = advanced_table[condition]
 
-        print(advanced_table)
-
-        self.tables[table_keys[stat_type]]["advanced"].append(advanced_table)
-
-
-    def extract_fumble_stats(self, file_name=""):
-        pass
+        if not advanced_table.empty:
+            self.tables[table_keys[stat_type]]["advanced"].append(advanced_table)
 
     def extract_defense_stats(self, file_name=""):
         pass
