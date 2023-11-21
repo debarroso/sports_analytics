@@ -1,15 +1,22 @@
-import requests
-from bs4 import BeautifulSoup
-import pathlib
+from selenium import webdriver
+from selenium.webdriver.firefox.options import Options
+import time, pathlib
 import datetime
-import time
+
 
 class ProFootballRefCrawler:
 
     def __init__(self):
+        self.driver = self.initialize_driver()
         self.current_path = pathlib.Path(__file__).parent.resolve()
         self.source_url = "https://www.pro-football-reference.com"
 
+    def initialize_driver(self):
+        firefox_options = Options()
+        # firefox_options.add_argument("--headless")
+        firefox_options.add_argument("-private")
+        return webdriver.Firefox(options=firefox_options)
+    
     def crawl(self):
         self.links = self.get_boxscores(2023, 2024)
         [print(link) for link in self.links]
@@ -17,11 +24,12 @@ class ProFootballRefCrawler:
     def get_boxscores(self, begin=2023, end=2024):
         boxscores = []
         for year in range(begin, end):
-            response = requests.get(f"{self.source_url}/years/{year}/games.htm")
-            soup = BeautifulSoup(response.content, 'html.parser')
-            elements = soup.find_all("a", text="boxscore")
 
-            boxscores += [self.source_url + element.get('href') for element in elements]
+            self.driver.get(f"{self.source_url}/years/{year}/games.htm")
+            elements = self.driver.find_elements_by_link_text("boxscore")
+
+            boxscores += [element.get_attribute("href") for element in elements]
+
         return boxscores
 
     def get_game_date(self, link):
@@ -32,7 +40,9 @@ class ProFootballRefCrawler:
         for link in self.links:
             today = datetime.date.today()
             date_string = self.get_game_date(link)
-            year, month, day = map(int, date_string.split("-"))
+            year = int(date_string.split("-")[0])
+            month = int(date_string.split("-")[1])
+            day = int(date_string.split("-")[2])
             game_date = datetime.date(year, month, day)
 
             if today - datetime.timedelta(days=3) >= game_date:
@@ -41,9 +51,9 @@ class ProFootballRefCrawler:
                 if pathlib.Path(file_path).is_file():
                     continue
 
-                response = requests.get(link)
+                self.driver.get(link)
                 with open(file_path, mode='w', encoding='utf-8') as fp:
-                    fp.write(response.text)
+                    fp.write(self.driver.page_source)
 
                 time.sleep(limit)
 
