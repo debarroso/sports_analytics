@@ -1,5 +1,6 @@
 from selenium import webdriver
 from selenium.webdriver.firefox.options import Options
+from selenium.webdriver.common.by import By
 import time, pathlib
 import datetime
 
@@ -13,7 +14,7 @@ class ProFootballRefCrawler:
 
     def initialize_driver(self):
         firefox_options = Options()
-        # firefox_options.add_argument("--headless")
+        firefox_options.add_argument("--headless")
         firefox_options.add_argument("-private")
         return webdriver.Firefox(options=firefox_options)
     
@@ -26,7 +27,7 @@ class ProFootballRefCrawler:
         for year in range(begin, end):
 
             self.driver.get(f"{self.source_url}/years/{year}/games.htm")
-            elements = self.driver.find_elements_by_link_text("boxscore")
+            elements = self.driver.find_elements(By.LINK_TEXT, "boxscore")
 
             boxscores += [element.get_attribute("href") for element in elements]
 
@@ -46,7 +47,7 @@ class ProFootballRefCrawler:
             game_date = datetime.date(year, month, day)
 
             if today - datetime.timedelta(days=3) >= game_date:
-                file_path = f"{str(self.current_path).replace('web_scraping', 'datalake')}\\{link.split('/')[-1]}"
+                file_path = f"{str(self.current_path).replace('web_scraping', 'datalake')}/{link.split('/')[-1]}"
 
                 if pathlib.Path(file_path).is_file():
                     continue
@@ -56,6 +57,8 @@ class ProFootballRefCrawler:
                     fp.write(self.driver.page_source)
 
                 time.sleep(limit)
+
+        self.driver.close()
 
 
 if __name__ == "__main__":

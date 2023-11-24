@@ -1,7 +1,7 @@
 import pandas as pd
 from bs4 import BeautifulSoup
-import time, datetime
-import pathlib, glob
+from io import StringIO
+import pathlib, glob, time
 
 
 def flatten_links(cell):
@@ -59,16 +59,19 @@ class ProFootballRefParser():
         ]
 
         for match_file in self.match_files:
+            start_time = time.perf_counter()
             self.soup = self.get_soup(file_name=match_file)
             self.soup_str = str(self.soup)
-            self.game_id = match_file.split(".")[0].split("\\")[-1]
+            self.game_id = match_file.split(".")[0].split("/")[-1]
             self.extract_game_details(file_name=match_file)
             self.extract_team_stats(file_name=match_file)
             for stat_type in stat_types:
                 self.extract_numeric_stats(stat_type=stat_type, file_name=match_file)
 
+            print(f"Processing {match_file.split('/')[-1]} took {time.perf_counter() - start_time}")
+
     def get_files(self, file_name="*"):
-        return glob.glob(f"{self.datalake_path}\\{file_name}")
+        return glob.glob(f"{self.datalake_path}/{file_name}")
 
     def get_soup(self, file_name=""):
         with open(file_name, mode="r", encoding="utf-8") as fp:
@@ -100,7 +103,7 @@ class ProFootballRefParser():
         officials_dict = {}
         
         try:
-            game_info = pd.read_html(self.soup_str, match="Game Info")
+            game_info = pd.read_html(StringIO(self.soup_str), match="Game Info")
             game_info_keys = game_info[0]["Game Info"].values.tolist()
             game_info_values = game_info[0]["Game Info.1"].values.tolist()
             game_info_dict = dict(zip(self.clean_header(game_info_keys), game_info_values))
@@ -114,7 +117,7 @@ class ProFootballRefParser():
                 raise
         
         try:
-            officials = pd.read_html(self.soup_str, match="Officials")
+            officials = pd.read_html(StringIO(self.soup_str), match="Officials")
             officials_keys = officials[0]["Officials"].values.tolist()
             officials_values = officials[0]["Officials.1"].values.tolist()
             officials_dict = dict(zip(self.clean_header(officials_keys), officials_values))
@@ -161,7 +164,7 @@ class ProFootballRefParser():
         home_coach_id = home_coach.find_all("a")[0].get("href")
         home_coach_name = home_coach.find_all("a")[0].text.strip()
 
-        team_stats = pd.read_html(self.soup_str, match="Team Stats")[0]
+        team_stats = pd.read_html(StringIO(self.soup_str), match="Team Stats")[0]
         stat_keys = self.clean_header(team_stats.iloc[:,0].values.tolist())
         away_team_stats = team_stats.iloc[:,1].values.tolist()
         away_team_abbreviation = team_stats.columns.values[1]
@@ -562,7 +565,7 @@ class ProFootballRefParser():
         }
 
         try:
-            tables = pd.read_html(self.soup_str, match=match_dict[stat_type], extract_links="body")
+            tables = pd.read_html(StringIO(self.soup_str), match=match_dict[stat_type], extract_links="body")
 
         except ValueError as e:
             
@@ -578,7 +581,7 @@ class ProFootballRefParser():
         basic_table = tables[0].iloc[:, slice_dict[stat_type]]
         basic_table.columns = basic_table.columns.map('_'.join).str.strip('_')
         basic_table = basic_table.rename(columns=basic_columns_dict[stat_type])
-        basic_table = basic_table.applymap(flatten_links)
+        basic_table = basic_table.map(flatten_links)
         for column in basic_columns_to_convert_dict[stat_type]:
             basic_table[column] = basic_table[column].apply(pd.to_numeric, errors="coerce")
         
@@ -599,12 +602,14 @@ class ProFootballRefParser():
         basic_table = basic_table[condition]
 
         if not basic_table.empty:
+            basic_table.insert(0, 'game_date', game_date)
+            basic_table.insert(0, 'game_id', game_id)
             self.tables[table_keys[stat_type]]["basic"].append(basic_table)
 
         if len(tables) == 1:
             return
 
-        advanced_table = tables[1].applymap(flatten_links)
+        advanced_table = tables[1].map(flatten_links)
         advanced_table = advanced_table.rename(columns=advanced_columns_dict[stat_type])
 
         for column in advanced_columns_to_convert_dict[stat_type]:
@@ -621,6 +626,8 @@ class ProFootballRefParser():
         advanced_table = advanced_table[condition]
 
         if not advanced_table.empty:
+            advanced_table.insert(0, 'game_date', game_date)
+            advanced_table.insert(0, 'game_id', game_id)
             self.tables[table_keys[stat_type]]["advanced"].append(advanced_table)
 
     def save_parsed_data(self):
@@ -649,6 +656,8 @@ class ProFootballRefParser():
 
 
 if __name__ == "__main__":
+    run_start = time.perf_counter()
     parser = ProFootballRefParser()
     parser.parse()
     parser.save_parsed_data()
+    print(f"Total run time = {time.perf_counter() - run_start}")

@@ -4,3 +4,4 @@ resources/*
 testing/*
 *.log
 .vscode
+*.DS_Store
