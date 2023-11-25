@@ -1,7 +1,7 @@
 from selenium import webdriver
 from selenium.webdriver.firefox.options import Options
 from selenium.webdriver.common.by import By
-import time, pathlib
+import time, pathlib, platform
 import datetime
 
 
@@ -11,6 +11,11 @@ class ProFootballRefCrawler:
         self.driver = self.initialize_driver()
         self.current_path = pathlib.Path(__file__).parent.resolve()
         self.source_url = "https://www.pro-football-reference.com"
+        
+        if platform.system == "Windows":
+            self.delimiter = "\\"
+        else:
+            self.delimiter = "/"
 
     def initialize_driver(self):
         firefox_options = Options()
@@ -47,7 +52,7 @@ class ProFootballRefCrawler:
             game_date = datetime.date(year, month, day)
 
             if today - datetime.timedelta(days=3) >= game_date:
-                file_path = f"{str(self.current_path).replace('web_scraping', 'datalake')}/{link.split('/')[-1]}"
+                file_path = f"{str(self.current_path).replace('web_scraping', 'datalake')}{self.delimiter}{link.split('/')[-1]}"
 
                 if pathlib.Path(file_path).is_file():
                     continue

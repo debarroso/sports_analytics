@@ -1,7 +1,7 @@
 import pandas as pd
 from bs4 import BeautifulSoup
 from io import StringIO
-import pathlib, glob, time
+import pathlib, glob, time, platform
 
 
 def flatten_links(cell):
@@ -14,6 +14,7 @@ class ProFootballRefParser():
 
     def __init__(self, file_name="*", tables_to_extract="all"):
         self.current_path = pathlib.Path(__file__).parent.resolve()
+        self.delimiter = "\\" if platform.system() == "Windows" else "/"
         self.datalake_path = str(self.current_path).replace("web_scraping", "datalake").replace("parsers", "sources")
         self.parsed_path = str(self.current_path).replace("web_scraping", "datalake").replace("parsers", "parsed")
         self.match_files = self.get_files(file_name=file_name)
@@ -62,16 +63,16 @@ class ProFootballRefParser():
             start_time = time.perf_counter()
             self.soup = self.get_soup(file_name=match_file)
             self.soup_str = str(self.soup)
-            self.game_id = match_file.split(".")[0].split("/")[-1]
+            self.game_id = match_file.split(".")[0].split(self.delimiter)[-1]
             self.extract_game_details(file_name=match_file)
             self.extract_team_stats(file_name=match_file)
             for stat_type in stat_types:
                 self.extract_numeric_stats(stat_type=stat_type, file_name=match_file)
 
-            print(f"Processing {match_file.split('/')[-1]} took {time.perf_counter() - start_time}")
+            print(f"Processing {match_file.split(self.delimiter)[-1]} took {time.perf_counter() - start_time}")
 
     def get_files(self, file_name="*"):
-        return glob.glob(f"{self.datalake_path}/{file_name}")
+        return glob.glob(f"{self.datalake_path}{self.delimiter}{file_name}")
 
     def get_soup(self, file_name=""):
         with open(file_name, mode="r", encoding="utf-8") as fp:
@@ -635,24 +636,24 @@ class ProFootballRefParser():
             
             if table in ["game_details", "team_stats"]:
                 combined_df = pd.DataFrame(self.tables[table])
-                combined_df.to_csv(f"{self.parsed_path}/{table}.csv", index=False, header=True)
+                combined_df.to_csv(f"{self.parsed_path}{self.delimiter}{table}.csv", index=False, header=True)
 
             elif len(self.tables[table]) == 1:
                 if len (self.tables[table]["basic"]) == 0:
                     break
                 combined_df = pd.concat(self.tables[table]["basic"], ignore_index=True)
-                combined_df.to_csv(f"{self.parsed_path}/{table}.csv", index=False, header=True)
+                combined_df.to_csv(f"{self.parsed_path}{self.delimiter}{table}.csv", index=False, header=True)
 
             else:
                 if len (self.tables[table]["basic"]) == 0:
                     break
                 combined_df = pd.concat(self.tables[table]["basic"], ignore_index=True)
-                combined_df.to_csv(f"{self.parsed_path}/{table}_basic.csv", index=False, header=True)
+                combined_df.to_csv(f"{self.parsed_path}{self.delimiter}{table}_basic.csv", index=False, header=True)
 
                 if len (self.tables[table]["advanced"]) == 0:
                     break
                 combined_df = pd.concat(self.tables[table]["advanced"], ignore_index=True)
-                combined_df.to_csv(f"{self.parsed_path}/{table}_advanced.csv", index=False, header=True)
+                combined_df.to_csv(f"{self.parsed_path}{self.delimiter}{table}_advanced.csv", index=False, header=True)
 
 
 if __name__ == "__main__":
