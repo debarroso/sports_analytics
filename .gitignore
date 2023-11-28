@@ -1,8 +1,10 @@
 datalake/*
+database/config/*
 tools/headers/*
 resources/*
 testing/*
-*.log
 .vscode
+*.log
 *.DS_Store
 *.idea
+*.env
