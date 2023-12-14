@@ -1,6 +1,6 @@
 import pandas as pd
-from sqlalchemy import create_engine, text
-import platform, glob, pathlib, json
+from sqlalchemy import create_engine
+import platform, glob, pathlib
 
 # Database connection parameters
 db_config = {
