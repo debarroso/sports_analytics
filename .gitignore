@@ -8,3 +8,4 @@ testing/*
 *.DS_Store
 *.idea
 *.env
+*.sh

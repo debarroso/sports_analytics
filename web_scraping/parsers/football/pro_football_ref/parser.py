@@ -1,7 +1,7 @@
 import pandas as pd
 from bs4 import BeautifulSoup
 from io import StringIO
-import pathlib, glob, time, platform
+import pathlib, glob, time, platform, os
 
 
 def flatten_links(cell):
@@ -18,6 +18,8 @@ class ProFootballRefParser():
         self.datalake_path = str(self.current_path).replace("web_scraping", "datalake").replace("parsers", "sources")
         self.parsed_path = str(self.current_path).replace("web_scraping", "datalake").replace("parsers", "parsed")
         self.match_files = self.get_files(file_name=file_name)
+        if len(self.match_files) == 0:
+            exit()
         self.tables = {
             "game_details": [],
             "team_stats": [],
@@ -69,10 +71,12 @@ class ProFootballRefParser():
             for stat_type in stat_types:
                 self.extract_numeric_stats(stat_type=stat_type, file_name=match_file)
 
+            os.rename(match_file, match_file.replace("unprocessed", "processed"))
+
             print(f"Processing {match_file.split(self.delimiter)[-1]} took {time.perf_counter() - start_time}")
 
     def get_files(self, file_name="*"):
-        return glob.glob(f"{self.datalake_path}{self.delimiter}{file_name}")
+        return glob.glob(f"{self.datalake_path}{self.delimiter}unprocessed{self.delimiter}{file_name}")
 
     def get_soup(self, file_name=""):
         with open(file_name, mode="r", encoding="utf-8") as fp:

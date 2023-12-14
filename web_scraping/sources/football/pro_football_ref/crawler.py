@@ -52,9 +52,11 @@ class ProFootballRefCrawler:
             game_date = datetime.date(year, month, day)
 
             if today - datetime.timedelta(days=3) >= game_date:
-                file_path = f"{str(self.current_path).replace('web_scraping', 'datalake')}{self.delimiter}{link.split('/')[-1]}"
+                file_path = f"{str(self.current_path).replace('web_scraping', 'datalake')}{self.delimiter}unprocessed{self.delimiter}{link.split('/')[-1]}"
 
                 if pathlib.Path(file_path).is_file():
+                    continue
+                elif pathlib.Path(file_path.replace("unprocessed", "processed")).is_file():
                     continue
 
                 self.driver.get(link)
