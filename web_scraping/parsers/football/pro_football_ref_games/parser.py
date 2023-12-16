@@ -10,7 +10,7 @@ def flatten_links(cell):
     else:
         return f"{cell[0]}^{cell[1]}"
 
-class ProFootballRefParser():
+class ProFootballRefGamesParser():
 
     def __init__(self, file_name="*", tables_to_extract="all"):
         self.current_path = pathlib.Path(__file__).parent.resolve()
@@ -662,7 +662,7 @@ class ProFootballRefParser():
 
 if __name__ == "__main__":
     run_start = time.perf_counter()
-    parser = ProFootballRefParser()
+    parser = ProFootballRefGamesParser()
     parser.parse()
     parser.save_parsed_data()
     print(f"Total run time = {time.perf_counter() - run_start}")

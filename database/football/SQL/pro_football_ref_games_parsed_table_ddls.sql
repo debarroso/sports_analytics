@@ -1,4 +1,4 @@
-create table pro_football_ref_parsed.team_stats
+create table pro_football_ref_games_parsed.team_stats
 (
     game_id             text not null,
     game_date           text,
@@ -26,40 +26,40 @@ create table pro_football_ref_parsed.team_stats
         primary key (team_id, game_id)
 );
 
-alter table pro_football_ref_parsed.team_stats
+alter table pro_football_ref_games_parsed.team_stats
     owner to oliver;
 
 create index team_stats_coach_id_index
-    on pro_football_ref_parsed.team_stats (coach_id);
+    on pro_football_ref_games_parsed.team_stats (coach_id);
 
 create index team_stats_coach_name_index
-    on pro_football_ref_parsed.team_stats (coach_name);
+    on pro_football_ref_games_parsed.team_stats (coach_name);
 
 create index team_stats_game_date_index
-    on pro_football_ref_parsed.team_stats (game_date);
+    on pro_football_ref_games_parsed.team_stats (game_date);
 
 create index team_stats_game_id_index
-    on pro_football_ref_parsed.team_stats (game_id);
+    on pro_football_ref_games_parsed.team_stats (game_id);
 
 create index team_stats_home_index
-    on pro_football_ref_parsed.team_stats (home);
+    on pro_football_ref_games_parsed.team_stats (home);
 
 create index team_stats_result_index
-    on pro_football_ref_parsed.team_stats (result);
+    on pro_football_ref_games_parsed.team_stats (result);
 
 create index team_stats_team_id_index
-    on pro_football_ref_parsed.team_stats (team_id);
+    on pro_football_ref_games_parsed.team_stats (team_id);
 
 create index team_stats_team_name_index
-    on pro_football_ref_parsed.team_stats (team_name);
+    on pro_football_ref_games_parsed.team_stats (team_name);
 
 create index team_stats_team_score_index
-    on pro_football_ref_parsed.team_stats (team_score);
+    on pro_football_ref_games_parsed.team_stats (team_score);
 
 create index team_stats_team_abbreviation_index
-    on pro_football_ref_parsed.team_stats (team_abbreviation);
+    on pro_football_ref_games_parsed.team_stats (team_abbreviation);
 
-create table pro_football_ref_parsed.rushing_stats_basic
+create table pro_football_ref_games_parsed.rushing_stats_basic
 (
     game_id      text not null,
     game_date    text,
@@ -73,22 +73,22 @@ create table pro_football_ref_parsed.rushing_stats_basic
         primary key (player, game_id)
 );
 
-alter table pro_football_ref_parsed.rushing_stats_basic
+alter table pro_football_ref_games_parsed.rushing_stats_basic
     owner to oliver;
 
 create index rushing_stats_basic_game_date_index
-    on pro_football_ref_parsed.rushing_stats_basic (game_date);
+    on pro_football_ref_games_parsed.rushing_stats_basic (game_date);
 
 create index rushing_stats_basic_game_id_index
-    on pro_football_ref_parsed.rushing_stats_basic (game_id);
+    on pro_football_ref_games_parsed.rushing_stats_basic (game_id);
 
 create index rushing_stats_basic_player_index
-    on pro_football_ref_parsed.rushing_stats_basic (player);
+    on pro_football_ref_games_parsed.rushing_stats_basic (player);
 
 create index rushing_stats_basic_team_index
-    on pro_football_ref_parsed.rushing_stats_basic (team);
+    on pro_football_ref_games_parsed.rushing_stats_basic (team);
 
-create table pro_football_ref_parsed.rushing_stats_advanced
+create table pro_football_ref_games_parsed.rushing_stats_advanced
 (
     game_id                          text not null,
     game_date                        text,
@@ -108,22 +108,22 @@ create table pro_football_ref_parsed.rushing_stats_advanced
         primary key (game_id, player)
 );
 
-alter table pro_football_ref_parsed.rushing_stats_advanced
+alter table pro_football_ref_games_parsed.rushing_stats_advanced
     owner to oliver;
 
 create index rushing_stats_advanced_game_date_index
-    on pro_football_ref_parsed.rushing_stats_advanced (game_date);
+    on pro_football_ref_games_parsed.rushing_stats_advanced (game_date);
 
 create index rushing_stats_advanced_game_id_index
-    on pro_football_ref_parsed.rushing_stats_advanced (game_id);
+    on pro_football_ref_games_parsed.rushing_stats_advanced (game_id);
 
 create index rushing_stats_advanced_player_index
-    on pro_football_ref_parsed.rushing_stats_advanced (player);
+    on pro_football_ref_games_parsed.rushing_stats_advanced (player);
 
 create index rushing_stats_advanced_team_index
-    on pro_football_ref_parsed.rushing_stats_advanced (team);
+    on pro_football_ref_games_parsed.rushing_stats_advanced (team);
 
-create table pro_football_ref_parsed.return_stats
+create table pro_football_ref_games_parsed.return_stats
 (
     game_id                text not null,
     game_date              text,
@@ -143,22 +143,22 @@ create table pro_football_ref_parsed.return_stats
         primary key (game_id, player)
 );
 
-alter table pro_football_ref_parsed.return_stats
+alter table pro_football_ref_games_parsed.return_stats
     owner to oliver;
 
 create index return_stats_game_date_index
-    on pro_football_ref_parsed.return_stats (game_date);
+    on pro_football_ref_games_parsed.return_stats (game_date);
 
 create index return_stats_game_id_index
-    on pro_football_ref_parsed.return_stats (game_id);
+    on pro_football_ref_games_parsed.return_stats (game_id);
 
 create index return_stats_player_index
-    on pro_football_ref_parsed.return_stats (player);
+    on pro_football_ref_games_parsed.return_stats (player);
 
 create index return_stats_team_index
-    on pro_football_ref_parsed.return_stats (team);
+    on pro_football_ref_games_parsed.return_stats (team);
 
-create table pro_football_ref_parsed.receiving_stats_basic
+create table pro_football_ref_games_parsed.receiving_stats_basic
 (
     game_id           text not null,
     game_date         text,
@@ -173,22 +173,22 @@ create table pro_football_ref_parsed.receiving_stats_basic
         primary key (game_id, player)
 );
 
-alter table pro_football_ref_parsed.receiving_stats_basic
+alter table pro_football_ref_games_parsed.receiving_stats_basic
     owner to oliver;
 
 create index receiving_stats_basic_game_date_index
-    on pro_football_ref_parsed.receiving_stats_basic (game_date);
+    on pro_football_ref_games_parsed.receiving_stats_basic (game_date);
 
 create index receiving_stats_basic_game_id_index
-    on pro_football_ref_parsed.receiving_stats_basic (game_id);
+    on pro_football_ref_games_parsed.receiving_stats_basic (game_id);
 
 create index receiving_stats_basic_player_index
-    on pro_football_ref_parsed.receiving_stats_basic (player);
+    on pro_football_ref_games_parsed.receiving_stats_basic (player);
 
 create index receiving_stats_basic_team_index
-    on pro_football_ref_parsed.receiving_stats_basic (team);
+    on pro_football_ref_games_parsed.receiving_stats_basic (team);
 
-create table pro_football_ref_parsed.receiving_stats_advanced
+create table pro_football_ref_games_parsed.receiving_stats_advanced
 (
     game_id                          text not null,
     game_date                        text,
@@ -214,22 +214,22 @@ create table pro_football_ref_parsed.receiving_stats_advanced
         primary key (game_id, player)
 );
 
-alter table pro_football_ref_parsed.receiving_stats_advanced
+alter table pro_football_ref_games_parsed.receiving_stats_advanced
     owner to oliver;
 
 create index receiving_stats_advanced_game_id_index
-    on pro_football_ref_parsed.receiving_stats_advanced (game_id);
+    on pro_football_ref_games_parsed.receiving_stats_advanced (game_id);
 
 create index receiving_stats_advanced_player_index
-    on pro_football_ref_parsed.receiving_stats_advanced (player);
+    on pro_football_ref_games_parsed.receiving_stats_advanced (player);
 
 create index receiving_stats_advanced_game_date_index
-    on pro_football_ref_parsed.receiving_stats_advanced (game_date);
+    on pro_football_ref_games_parsed.receiving_stats_advanced (game_date);
 
 create index receiving_stats_advanced_team_index
-    on pro_football_ref_parsed.receiving_stats_advanced (team);
+    on pro_football_ref_games_parsed.receiving_stats_advanced (team);
 
-create table pro_football_ref_parsed.passing_stats_basic
+create table pro_football_ref_games_parsed.passing_stats_basic
 (
     game_id            text not null,
     game_date          text,
@@ -248,22 +248,22 @@ create table pro_football_ref_parsed.passing_stats_basic
         primary key (player, game_id)
 );
 
-alter table pro_football_ref_parsed.passing_stats_basic
+alter table pro_football_ref_games_parsed.passing_stats_basic
     owner to oliver;
 
 create index passing_stats_basic_game_date_index
-    on pro_football_ref_parsed.passing_stats_basic (game_date);
+    on pro_football_ref_games_parsed.passing_stats_basic (game_date);
 
 create index passing_stats_basic_game_id_index
-    on pro_football_ref_parsed.passing_stats_basic (game_id);
+    on pro_football_ref_games_parsed.passing_stats_basic (game_id);
 
 create index passing_stats_basic_player_index
-    on pro_football_ref_parsed.passing_stats_basic (player);
+    on pro_football_ref_games_parsed.passing_stats_basic (player);
 
 create index passing_stats_basic_team_index
-    on pro_football_ref_parsed.passing_stats_basic (team);
+    on pro_football_ref_games_parsed.passing_stats_basic (team);
 
-create table pro_football_ref_parsed.passing_stats_advanced
+create table pro_football_ref_games_parsed.passing_stats_advanced
 (
     game_id                            text not null,
     game_date                          text,
@@ -297,22 +297,22 @@ create table pro_football_ref_parsed.passing_stats_advanced
         primary key (game_id, player)
 );
 
-alter table pro_football_ref_parsed.passing_stats_advanced
+alter table pro_football_ref_games_parsed.passing_stats_advanced
     owner to oliver;
 
 create index passing_stats_advanced_game_date_index
-    on pro_football_ref_parsed.passing_stats_advanced (game_date);
+    on pro_football_ref_games_parsed.passing_stats_advanced (game_date);
 
 create index passing_stats_advanced_game_id_index
-    on pro_football_ref_parsed.passing_stats_advanced (game_id);
+    on pro_football_ref_games_parsed.passing_stats_advanced (game_id);
 
 create index passing_stats_advanced_player_index
-    on pro_football_ref_parsed.passing_stats_advanced (player);
+    on pro_football_ref_games_parsed.passing_stats_advanced (player);
 
 create index passing_stats_advanced_team_index
-    on pro_football_ref_parsed.passing_stats_advanced (team);
+    on pro_football_ref_games_parsed.passing_stats_advanced (team);
 
-create table pro_football_ref_parsed.kicking_stats
+create table pro_football_ref_games_parsed.kicking_stats
 (
     game_id                text not null,
     game_date              text,
@@ -330,22 +330,22 @@ create table pro_football_ref_parsed.kicking_stats
         primary key (game_id, player)
 );
 
-alter table pro_football_ref_parsed.kicking_stats
+alter table pro_football_ref_games_parsed.kicking_stats
     owner to oliver;
 
 create index kicking_stats_game_date_index
-    on pro_football_ref_parsed.kicking_stats (game_date);
+    on pro_football_ref_games_parsed.kicking_stats (game_date);
 
 create index kicking_stats_game_id_index
-    on pro_football_ref_parsed.kicking_stats (game_id);
+    on pro_football_ref_games_parsed.kicking_stats (game_id);
 
 create index kicking_stats_player_index
-    on pro_football_ref_parsed.kicking_stats (player);
+    on pro_football_ref_games_parsed.kicking_stats (player);
 
 create index kicking_stats_team_index
-    on pro_football_ref_parsed.kicking_stats (team);
+    on pro_football_ref_games_parsed.kicking_stats (team);
 
-create table pro_football_ref_parsed.game_details
+create table pro_football_ref_games_parsed.game_details
 (
     game_id        text not null
         constraint game_details_pk
@@ -372,61 +372,61 @@ create table pro_football_ref_parsed.game_details
     super_bowl_mvp text
 );
 
-alter table pro_football_ref_parsed.game_details
+alter table pro_football_ref_games_parsed.game_details
     owner to oliver;
 
 create index game_details_back_judge_index
-    on pro_football_ref_parsed.game_details (back_judge);
+    on pro_football_ref_games_parsed.game_details (back_judge);
 
 create index game_details_down_judge_index
-    on pro_football_ref_parsed.game_details (down_judge);
+    on pro_football_ref_games_parsed.game_details (down_judge);
 
 create index game_details_field_judge_index
-    on pro_football_ref_parsed.game_details (field_judge);
+    on pro_football_ref_games_parsed.game_details (field_judge);
 
 create index game_details_game_date_index
-    on pro_football_ref_parsed.game_details (game_date);
+    on pro_football_ref_games_parsed.game_details (game_date);
 
 create index game_details_game_id_index
-    on pro_football_ref_parsed.game_details (game_id);
+    on pro_football_ref_games_parsed.game_details (game_id);
 
 create index game_details_game_time_index
-    on pro_football_ref_parsed.game_details (game_time);
+    on pro_football_ref_games_parsed.game_details (game_time);
 
 create index game_details_head_linesman_index
-    on pro_football_ref_parsed.game_details (head_linesman);
+    on pro_football_ref_games_parsed.game_details (head_linesman);
 
 create index game_details_line_judge_index
-    on pro_football_ref_parsed.game_details (line_judge);
+    on pro_football_ref_games_parsed.game_details (line_judge);
 
 create index "game_details_over/under_index"
-    on pro_football_ref_parsed.game_details ("over/under");
+    on pro_football_ref_games_parsed.game_details ("over/under");
 
 create index game_details_referee_index
-    on pro_football_ref_parsed.game_details (referee);
+    on pro_football_ref_games_parsed.game_details (referee);
 
 create index game_details_roof_index
-    on pro_football_ref_parsed.game_details (roof);
+    on pro_football_ref_games_parsed.game_details (roof);
 
 create index game_details_side_judge_index
-    on pro_football_ref_parsed.game_details (side_judge);
+    on pro_football_ref_games_parsed.game_details (side_judge);
 
 create index game_details_surface_index
-    on pro_football_ref_parsed.game_details (surface);
+    on pro_football_ref_games_parsed.game_details (surface);
 
 create index game_details_umpire_index
-    on pro_football_ref_parsed.game_details (umpire);
+    on pro_football_ref_games_parsed.game_details (umpire);
 
 create index game_details_vegas_line_index
-    on pro_football_ref_parsed.game_details (vegas_line);
+    on pro_football_ref_games_parsed.game_details (vegas_line);
 
 create index game_details_weather_index
-    on pro_football_ref_parsed.game_details (weather);
+    on pro_football_ref_games_parsed.game_details (weather);
 
 create index game_details_won_toss_index
-    on pro_football_ref_parsed.game_details (won_toss);
+    on pro_football_ref_games_parsed.game_details (won_toss);
 
-create table pro_football_ref_parsed.fumble_stats
+create table pro_football_ref_games_parsed.fumble_stats
 (
     game_id      text not null,
     game_date    text,
@@ -438,28 +438,28 @@ create table pro_football_ref_parsed.fumble_stats
         primary key (game_id, player)
 );
 
-alter table pro_football_ref_parsed.fumble_stats
+alter table pro_football_ref_games_parsed.fumble_stats
     owner to oliver;
 
 create index fumble_stats_fumbles_index
-    on pro_football_ref_parsed.fumble_stats (fumbles);
+    on pro_football_ref_games_parsed.fumble_stats (fumbles);
 
 create index fumble_stats_fumbles_lost_index
-    on pro_football_ref_parsed.fumble_stats (fumbles_lost);
+    on pro_football_ref_games_parsed.fumble_stats (fumbles_lost);
 
 create index fumble_stats_game_date_index
-    on pro_football_ref_parsed.fumble_stats (game_date);
+    on pro_football_ref_games_parsed.fumble_stats (game_date);
 
 create index fumble_stats_game_id_index
-    on pro_football_ref_parsed.fumble_stats (game_id);
+    on pro_football_ref_games_parsed.fumble_stats (game_id);
 
 create index fumble_stats_player_index
-    on pro_football_ref_parsed.fumble_stats (player);
+    on pro_football_ref_games_parsed.fumble_stats (player);
 
 create index fumble_stats_team_index
-    on pro_football_ref_parsed.fumble_stats (team);
+    on pro_football_ref_games_parsed.fumble_stats (team);
 
-create table pro_football_ref_parsed.defense_stats_basic
+create table pro_football_ref_games_parsed.defense_stats_basic
 (
     game_id                              text not null,
     game_date                            text,
@@ -484,40 +484,40 @@ create table pro_football_ref_parsed.defense_stats_basic
         primary key (game_id, player)
 );
 
-alter table pro_football_ref_parsed.defense_stats_basic
+alter table pro_football_ref_games_parsed.defense_stats_basic
     owner to oliver;
 
 create index defense_stats_basic_forced_fumbles_index
-    on pro_football_ref_parsed.defense_stats_basic (forced_fumbles);
+    on pro_football_ref_games_parsed.defense_stats_basic (forced_fumbles);
 
 create index defense_stats_basic_game_date_index
-    on pro_football_ref_parsed.defense_stats_basic (game_date);
+    on pro_football_ref_games_parsed.defense_stats_basic (game_date);
 
 create index defense_stats_basic_game_id_index
-    on pro_football_ref_parsed.defense_stats_basic (game_id);
+    on pro_football_ref_games_parsed.defense_stats_basic (game_id);
 
 create index defense_stats_basic_interceptions_index
-    on pro_football_ref_parsed.defense_stats_basic (interceptions);
+    on pro_football_ref_games_parsed.defense_stats_basic (interceptions);
 
 create index defense_stats_basic_passes_defended_index
-    on pro_football_ref_parsed.defense_stats_basic (passes_defended);
+    on pro_football_ref_games_parsed.defense_stats_basic (passes_defended);
 
 create index defense_stats_basic_player_index
-    on pro_football_ref_parsed.defense_stats_basic (player);
+    on pro_football_ref_games_parsed.defense_stats_basic (player);
 
 create index defense_stats_basic_qb_hits_index
-    on pro_football_ref_parsed.defense_stats_basic (qb_hits);
+    on pro_football_ref_games_parsed.defense_stats_basic (qb_hits);
 
 create index defense_stats_basic_sacks_index
-    on pro_football_ref_parsed.defense_stats_basic (sacks);
+    on pro_football_ref_games_parsed.defense_stats_basic (sacks);
 
 create index defense_stats_basic_tackles_for_loss_index
-    on pro_football_ref_parsed.defense_stats_basic (tackles_for_loss);
+    on pro_football_ref_games_parsed.defense_stats_basic (tackles_for_loss);
 
 create index defense_stats_basic_team_index
-    on pro_football_ref_parsed.defense_stats_basic (team);
+    on pro_football_ref_games_parsed.defense_stats_basic (team);
 
-create table pro_football_ref_parsed.defense_stats_advanced
+create table pro_football_ref_games_parsed.defense_stats_advanced
 (
     game_id                                text not null,
     game_date                              text not null,
@@ -547,30 +547,30 @@ create table pro_football_ref_parsed.defense_stats_advanced
         primary key (game_id, player)
 );
 
-alter table pro_football_ref_parsed.defense_stats_advanced
+alter table pro_football_ref_games_parsed.defense_stats_advanced
     owner to oliver;
 
 create index defense_stats_advanced_combined_tackles_index
-    on pro_football_ref_parsed.defense_stats_advanced (combined_tackles);
+    on pro_football_ref_games_parsed.defense_stats_advanced (combined_tackles);
 
 create index defense_stats_advanced_game_date_index
-    on pro_football_ref_parsed.defense_stats_advanced (game_date);
+    on pro_football_ref_games_parsed.defense_stats_advanced (game_date);
 
 create index defense_stats_advanced_game_id_index
-    on pro_football_ref_parsed.defense_stats_advanced (game_id);
+    on pro_football_ref_games_parsed.defense_stats_advanced (game_id);
 
 create index defense_stats_advanced_missed_tackles_index
-    on pro_football_ref_parsed.defense_stats_advanced (missed_tackles);
+    on pro_football_ref_games_parsed.defense_stats_advanced (missed_tackles);
 
 create index defense_stats_advanced_player_index
-    on pro_football_ref_parsed.defense_stats_advanced (player);
+    on pro_football_ref_games_parsed.defense_stats_advanced (player);
 
 create index defense_stats_advanced_sacks_index
-    on pro_football_ref_parsed.defense_stats_advanced (sacks);
+    on pro_football_ref_games_parsed.defense_stats_advanced (sacks);
 
 create index defense_stats_advanced_targeted_index
-    on pro_football_ref_parsed.defense_stats_advanced (targeted);
+    on pro_football_ref_games_parsed.defense_stats_advanced (targeted);
 
 create index defense_stats_advanced_team_index
-    on pro_football_ref_parsed.defense_stats_advanced (team);
+    on pro_football_ref_games_parsed.defense_stats_advanced (team);
 

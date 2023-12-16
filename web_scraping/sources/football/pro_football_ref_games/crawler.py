@@ -5,7 +5,7 @@ import time, pathlib, platform
 import datetime
 
 
-class ProFootballRefCrawler:
+class ProFootballRefGamesCrawler:
 
     def __init__(self):
         self.driver = self.initialize_driver()
@@ -70,7 +70,7 @@ class ProFootballRefCrawler:
 
 
 if __name__ == "__main__":
-    crawler = ProFootballRefCrawler()
+    crawler = ProFootballRefGamesCrawler()
     crawler.crawl()
     crawler.save_to_datalake()
     
