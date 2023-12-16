@@ -1,6 +1,10 @@
 from selenium import webdriver
 from selenium.webdriver.firefox.options import Options
-import datetime, time, pathlib, csv
+from selenium.webdriver.common.by import By
+import datetime, time, pathlib, csv, platform, os
+
+
+delimiter = "\\" if platform.system() == "Windows" else "/"
 
 
 class EspnLiveDraftResultsCrawler:
@@ -12,15 +16,15 @@ class EspnLiveDraftResultsCrawler:
 
     def initialize_driver(self):
         firefox_options = Options()
-        firefox_options.add_argument("--headless")
+        # firefox_options.add_argument("--headless")
         firefox_options.add_argument("-private")
         return webdriver.Firefox(options=firefox_options)
 
     def crawl(self):
         self.driver.get(self.source_url)
         time.sleep(8)
-        nav = self.driver.find_elements_by_tag_name("nav")
-        buttons = nav[2].find_elements_by_tag_name("button")
+        nav = self.driver.find_elements(By.TAG_NAME, "nav")
+        buttons = nav[2].find_elements(By.TAG_NAME, "button")
         next_button = buttons[1]
 
         rankings = []
@@ -46,12 +50,12 @@ class EspnLiveDraftResultsCrawler:
             6: "Percent_Rostered"
         }
 
-        table = self.driver.find_element_by_tag_name("tbody")
+        table = self.driver.find_element(By.TAG_NAME, "tbody")
         rankings = []
 
-        for row in table.find_elements_by_tag_name("tr"):
+        for row in table.find_elements(By.TAG_NAME, "tr"):
             row_dict = {}
-            elements = row.find_elements_by_tag_name("td")
+            elements = row.find_elements(By.TAG_NAME, "td")
             count = 0
 
             for element in elements:
@@ -67,7 +71,10 @@ class EspnLiveDraftResultsCrawler:
         file_path = str(self.current_path).replace('web_scraping', 'datalake')
         file_name = f"espn_live_draft_results_{timestamp.replace(':', '')}.csv"
 
-        with open(f"{file_path}\\{file_name}", mode='w', encoding='utf-8', newline='') as fp:
+        if not os.path.exists(file_path):
+            os.makedirs(file_path)
+
+        with open(f"{file_path}{delimiter}{file_name}", mode='w', encoding='utf-8', newline='') as fp:
             fieldnames = [
                 "Rank",
                 "Player",
@@ -96,3 +103,4 @@ if __name__ == "__main__":
     crawler = EspnLiveDraftResultsCrawler()
     crawler.crawl()
     crawler.save_to_datalake()
+    

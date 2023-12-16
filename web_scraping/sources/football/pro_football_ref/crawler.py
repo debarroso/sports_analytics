@@ -25,7 +25,6 @@ class ProFootballRefCrawler:
     
     def crawl(self):
         self.links = self.get_boxscores(2023, 2024)
-        [print(link) for link in self.links]
 
     def get_boxscores(self, begin=2023, end=2024):
         boxscores = []
@@ -59,6 +58,8 @@ class ProFootballRefCrawler:
                 elif pathlib.Path(file_path.replace("unprocessed", "processed")).is_file():
                     continue
 
+                print(file_path.split(self.delimiter)[-1])
+
                 self.driver.get(link)
                 with open(file_path, mode='w', encoding='utf-8') as fp:
                     fp.write(self.driver.page_source)
@@ -72,3 +73,4 @@ if __name__ == "__main__":
     crawler = ProFootballRefCrawler()
     crawler.crawl()
     crawler.save_to_datalake()
+    
