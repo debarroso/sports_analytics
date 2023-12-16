@@ -16,7 +16,7 @@ class EspnLiveDraftResultsCrawler:
 
     def initialize_driver(self):
         firefox_options = Options()
-        # firefox_options.add_argument("--headless")
+        firefox_options.add_argument("--headless")
         firefox_options.add_argument("-private")
         return webdriver.Firefox(options=firefox_options)
 
@@ -69,7 +69,7 @@ class EspnLiveDraftResultsCrawler:
 
     def save_to_datalake(self):
         timestamp = str(datetime.datetime.now()).replace(' ', '_').split('.')[0]
-        file_path = str(self.current_path).replace('web_scraping', 'datalake')
+        file_path = f"{str(self.current_path).replace('web_scraping', 'datalake')}{delimiter}unprocessed"
         file_name = f"espn_live_draft_results_{timestamp.replace(':', '')}.csv"
 
         if not os.path.exists(file_path):
