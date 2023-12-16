@@ -38,6 +38,7 @@ class EspnLiveDraftResultsCrawler:
                 break
 
         self.data = rankings
+        self.driver.close()
 
     def get_table_stats(self):
         header_dict = {
