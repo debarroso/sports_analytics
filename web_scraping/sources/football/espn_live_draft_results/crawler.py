@@ -75,6 +75,9 @@ class EspnLiveDraftResultsCrawler:
         if not os.path.exists(file_path):
             os.makedirs(file_path)
 
+        if not os.path.exists(f"{file_path.replace('unprocessed', 'processed')}"):
+            os.makedirs(f"{file_path.replace('unprocessed', 'processed')}")
+
         with open(f"{file_path}{delimiter}{file_name}", mode='w', encoding='utf-8', newline='') as fp:
             fieldnames = [
                 "Rank",

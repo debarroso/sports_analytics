@@ -1,7 +1,7 @@
 from selenium import webdriver
 from selenium.webdriver.firefox.options import Options
 from selenium.webdriver.common.by import By
-import time, pathlib, platform
+import time, pathlib, platform, os
 import datetime
 
 
@@ -51,17 +51,25 @@ class ProFootballRefGamesCrawler:
             game_date = datetime.date(year, month, day)
 
             if today - datetime.timedelta(days=3) >= game_date:
-                file_path = f"{str(self.current_path).replace('web_scraping', 'datalake')}{self.delimiter}unprocessed{self.delimiter}{link.split('/')[-1]}"
+                file_name = link.split('/')[-1]
+                file_path = f"{str(self.current_path).replace('web_scraping', 'datalake')}{self.delimiter}unprocessed"
+                full_path = f"{file_path}{self.delimiter}{file_name}"
 
-                if pathlib.Path(file_path).is_file():
+                if not os.path.exists(file_path):
+                    os.makedirs(file_path)
+
+                if not os.path.exists(file_path.replace("unprocessed", "processed")):
+                    os.makedirs(file_path.replace("unprocessed", "processed"))
+
+                if pathlib.Path(full_path).is_file():
                     continue
-                elif pathlib.Path(file_path.replace("unprocessed", "processed")).is_file():
+                elif pathlib.Path(full_path.replace("unprocessed", "processed")).is_file():
                     continue
 
-                print(file_path.split(self.delimiter)[-1])
+                print(file_name)
 
                 self.driver.get(link)
-                with open(file_path, mode='w', encoding='utf-8') as fp:
+                with open(full_path, mode='w', encoding='utf-8') as fp:
                     fp.write(self.driver.page_source)
 
                 time.sleep(limit)
