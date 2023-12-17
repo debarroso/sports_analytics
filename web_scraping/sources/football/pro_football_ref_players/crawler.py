@@ -24,7 +24,7 @@ class ProFootballRefPlayersCrawler:
 
     def initialize_driver(self):
         firefox_options = Options()
-        # firefox_options.add_argument("--headless")
+        firefox_options.add_argument("--headless")
         firefox_options.add_argument("-private")
         return webdriver.Firefox(options=firefox_options)
     
@@ -65,6 +65,7 @@ class ProFootballRefPlayersCrawler:
         self.links = [row[0].split("^")[1] for row in results]
 
     def save_to_datalake(self, limit=5):
+        print(f"There are {len(self.links)} unique players")
         for link in self.links:
             file_name = link[1:].replace("/", "_")
             file_path = f"{str(self.current_path).replace('web_scraping', 'datalake')}{self.delimiter}unprocessed"
