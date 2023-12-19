@@ -17,8 +17,8 @@ class ProFootballRefGamesParser():
         self.delimiter = "\\" if platform.system() == "Windows" else "/"
         self.datalake_path = str(self.current_path).replace("web_scraping", "datalake").replace("parsers", "sources")
         self.parsed_path = str(self.current_path).replace("web_scraping", "datalake").replace("parsers", "parsed")
-        self.match_files = self.get_files(file_name=file_name)
-        if len(self.match_files) == 0:
+        self.files = self.get_files(file_name=file_name)
+        if len(self.files) == 0:
             exit()
         self.tables = {
             "game_details": [],
@@ -61,19 +61,19 @@ class ProFootballRefGamesParser():
             "kicking"
         ]
 
-        for match_file in self.match_files:
+        for game_file in self.files:
             start_time = time.perf_counter()
-            self.soup = self.get_soup(file_name=match_file)
+            self.soup = self.get_soup(file_name=game_file)
             self.soup_str = str(self.soup)
-            self.game_id = match_file.split(".")[0].split(self.delimiter)[-1]
-            self.extract_game_details(file_name=match_file)
-            self.extract_team_stats(file_name=match_file)
+            self.game_id = game_file.split(".")[0].split(self.delimiter)[-1]
+            self.extract_game_details(file_name=game_file)
+            self.extract_team_stats(file_name=game_file)
             for stat_type in stat_types:
-                self.extract_numeric_stats(stat_type=stat_type, file_name=match_file)
+                self.extract_numeric_stats(stat_type=stat_type, file_name=game_file)
 
-            os.rename(match_file, match_file.replace("unprocessed", "processed"))
+            os.rename(game_file, game_file.replace("unprocessed", "processed"))
 
-            print(f"Processing {match_file.split(self.delimiter)[-1]} took {time.perf_counter() - start_time}")
+            print(f"Processing {game_file.split(self.delimiter)[-1]} took {time.perf_counter() - start_time}")
 
     def get_files(self, file_name="*"):
         return glob.glob(f"{self.datalake_path}{self.delimiter}unprocessed{self.delimiter}{file_name}")
