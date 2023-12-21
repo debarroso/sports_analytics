@@ -666,3 +666,4 @@ if __name__ == "__main__":
     parser.parse()
     parser.save_parsed_data()
     print(f"Total run time = {time.perf_counter() - run_start}")
+    
