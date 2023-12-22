@@ -28,7 +28,7 @@ class ProFootballRefPlayersParser():
             self.soup = self.get_soup(file_name=player_file)
             self.soup_str = str(self.soup)
             self.extract_player_details(player_file)
-            os.rename(player_file, player_file.replace("unprocessed", "processed"))
+            # os.rename(player_file, player_file.replace("unprocessed", "processed"))
 
             print(f"Processing {player_file.split(self.delimiter)[-1]} took {time.perf_counter() - start_time}")
 
@@ -41,8 +41,12 @@ class ProFootballRefPlayersParser():
         return soup
 
     def extract_player_details(self, file_name=""):
-        pass
-
+        info_div = self.soup.find('div', id='info')
+        name = info_div.find('h1').text.strip()
+        print(name)
+        for p in info_div.find_all('p'):
+            field_text = p.text.strip()
+        
     def save_parsed_data(self):
         pass
 
