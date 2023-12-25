@@ -643,21 +643,18 @@ class ProFootballRefGamesParser():
                 combined_df.to_csv(f"{self.parsed_path}{self.delimiter}{table}.csv", index=False, header=True)
 
             elif len(self.tables[table]) == 1:
-                if len (self.tables[table]["basic"]) == 0:
-                    break
-                combined_df = pd.concat(self.tables[table]["basic"], ignore_index=True)
-                combined_df.to_csv(f"{self.parsed_path}{self.delimiter}{table}.csv", index=False, header=True)
+                if len(self.tables[table]["basic"]) > 0:
+                    combined_df = pd.concat(self.tables[table]["basic"], ignore_index=True)
+                    combined_df.to_csv(f"{self.parsed_path}{self.delimiter}{table}.csv", index=False, header=True)
 
             else:
-                if len (self.tables[table]["basic"]) == 0:
-                    break
-                combined_df = pd.concat(self.tables[table]["basic"], ignore_index=True)
-                combined_df.to_csv(f"{self.parsed_path}{self.delimiter}{table}_basic.csv", index=False, header=True)
+                if len(self.tables[table]["basic"]) > 0:
+                    combined_df = pd.concat(self.tables[table]["basic"], ignore_index=True)
+                    combined_df.to_csv(f"{self.parsed_path}{self.delimiter}{table}_basic.csv", index=False, header=True)
 
-                if len (self.tables[table]["advanced"]) == 0:
-                    break
-                combined_df = pd.concat(self.tables[table]["advanced"], ignore_index=True)
-                combined_df.to_csv(f"{self.parsed_path}{self.delimiter}{table}_advanced.csv", index=False, header=True)
+                if len(self.tables[table]["advanced"]) > 0:
+                    combined_df = pd.concat(self.tables[table]["advanced"], ignore_index=True)
+                    combined_df.to_csv(f"{self.parsed_path}{self.delimiter}{table}_advanced.csv", index=False, header=True)
 
 
 if __name__ == "__main__":
