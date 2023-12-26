@@ -1,6 +1,5 @@
 datalake/*
 database/config/*
-web_scraping/tools/*
 resources/*
 testing/*
 .vscode
