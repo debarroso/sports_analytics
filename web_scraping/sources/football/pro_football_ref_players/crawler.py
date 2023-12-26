@@ -7,15 +7,15 @@ import psycopg2
 class ProFootballRefPlayersCrawler:
 
     def __init__(self):
-        self.driver = self.initialize_driver()
-        self.current_path = pathlib.Path(__file__).parent.resolve()
-        self.source_url = "https://www.pro-football-reference.com"
-        
         if platform.system == "Windows":
             self.delimiter = "\\"
         else:
             self.delimiter = "/"
 
+        self.driver = self.initialize_driver()
+        self.current_path = pathlib.Path(__file__).parent.resolve()
+        self.source_url = "https://www.pro-football-reference.com"
+        
         self.db_config = {
             "dbname": "nfl_statistics",
             "host": "localhost",  # or your database host
