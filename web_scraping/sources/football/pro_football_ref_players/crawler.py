@@ -25,8 +25,16 @@ class ProFootballRefPlayersCrawler:
     def initialize_driver(self):
         firefox_options = Options()
         firefox_options.add_argument("--headless")
-        firefox_options.add_argument("-private")
-        return webdriver.Firefox(options=firefox_options)
+
+        user_agent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:121.0) Gecko/20100101 Firefox/121.0"
+        firefox_options.set_preference("general.useragent.override", user_agent)
+        
+        web_scraping_path = f"{pathlib.Path(__file__).parent.parent.parent.parent.resolve()}"
+        driver = webdriver.Firefox(options=firefox_options)
+        driver.install_addon(f"{web_scraping_path}{self.delimiter}tools{self.delimiter}selenium{self.delimiter}extensions{self.delimiter}uBlock0.xpi")
+        
+        driver.maximize_window()
+        return driver
     
     def crawl(self):
         # Connect to the database

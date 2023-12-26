@@ -1,6 +1,6 @@
 datalake/*
 database/config/*
-tools/headers/*
+web_scraping/tools/*
 resources/*
 testing/*
 .vscode
@@ -9,3 +9,4 @@ testing/*
 *.idea
 *.env
 *.sh
+*.xpi
