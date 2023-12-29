@@ -1,5 +1,9 @@
 from selenium import webdriver
 from selenium.webdriver.firefox.options import Options
+from selenium.common.exceptions import NoSuchElementException
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 import time, pathlib, platform, os
 import psycopg2
 
@@ -72,7 +76,7 @@ class ProFootballRefPlayersCrawler:
 
         self.links = [row[0].split("^")[1] for row in results]
 
-    def save_to_datalake(self, limit=5):
+    def save_to_datalake(self, limit=3):
         print(f"There are {len(self.links)} unique players")
         for link in self.links:
             file_name = link[1:].replace("/", "_")
@@ -90,9 +94,22 @@ class ProFootballRefPlayersCrawler:
             elif pathlib.Path(full_path.replace("unprocessed", "processed")).is_file():
                 continue
 
-            print(file_name)
+            print(f"Processing file: {file_name}")
 
             self.driver.get(f"{self.source_url}{link}")
+
+            try:
+                element = self.driver.find_element(by=By.ID, value="meta_more_button")
+                self.driver.execute_script("arguments[0].click();", element)
+            except NoSuchElementException:
+                print(f"No meta button on page: {link}")
+
+            try:
+                element = self.driver.find_element(By.ID, "transactions_toggler")
+                self.driver.execute_script("arguments[0].click();", element)
+            except NoSuchElementException:
+                print(f"No transactions link on page: {link}")
+
             with open(full_path, mode='w', encoding='utf-8') as fp:
                 fp.write(self.driver.page_source)
 
