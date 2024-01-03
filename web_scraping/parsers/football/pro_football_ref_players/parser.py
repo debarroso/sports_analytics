@@ -61,7 +61,7 @@ class ProFootballRefPlayersParser():
 
     def extract_player_details(self, file_name=""):
         player_data = {}
-        player_data["id"] = file_name.split(self.delimiter)[-1].split("_")[2].replace(".htm", "")
+        player_data["id"] = file_name.split(self.delimiter)[-1][10:].replace(".htm", "")
         info_div = self.soup.find("div", id="info")
         player_data["name"] = info_div.find("h1").text.strip()
         
