@@ -12,7 +12,7 @@ def flatten_links(cell):
 
 class ProFootballRefGamesParser():
 
-    def __init__(self, file_name="*", tables_to_extract="all"):
+    def __init__(self, file_name="*"):
         self.current_path = pathlib.Path(__file__).parent.resolve()
         self.delimiter = "\\" if platform.system() == "Windows" else "/"
         self.datalake_path = str(self.current_path).replace("web_scraping", "datalake").replace("parsers", "sources")
@@ -586,7 +586,7 @@ class ProFootballRefGamesParser():
         basic_table = tables[0].iloc[:, slice_dict[stat_type]]
         basic_table.columns = basic_table.columns.map('_'.join).str.strip('_')
         basic_table = basic_table.rename(columns=basic_columns_dict[stat_type])
-        basic_table = basic_table.map(flatten_links)
+        basic_table = basic_table.applymap(flatten_links)
         for column in basic_columns_to_convert_dict[stat_type]:
             basic_table[column] = basic_table[column].apply(pd.to_numeric, errors="coerce")
         
@@ -614,7 +614,7 @@ class ProFootballRefGamesParser():
         if len(tables) == 1:
             return
 
-        advanced_table = tables[1].map(flatten_links)
+        advanced_table = tables[1].applymap(flatten_links)
         advanced_table = advanced_table.rename(columns=advanced_columns_dict[stat_type])
 
         for column in advanced_columns_to_convert_dict[stat_type]:
