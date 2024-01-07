@@ -4,12 +4,6 @@ from datetime import datetime
 import pathlib, glob, time, platform, os, re, csv
 
 
-def flatten_links(cell):
-    if cell[1] is None:
-        return cell[0]
-    else:
-        return f"{cell[0]}^{cell[1]}"
-
 class ProFootballRefPlayersParser():
 
     def __init__(self, file_name="*"):
