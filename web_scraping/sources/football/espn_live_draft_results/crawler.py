@@ -1,7 +1,12 @@
 from selenium import webdriver
 from selenium.webdriver.firefox.options import Options
 from selenium.webdriver.common.by import By
-import datetime, time, pathlib, csv, platform, os
+import datetime
+import time
+import pathlib
+import csv
+import platform
+import os
 
 
 delimiter = "\\" if platform.system() == "Windows" else "/"

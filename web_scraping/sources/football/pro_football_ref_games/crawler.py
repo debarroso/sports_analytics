@@ -1,7 +1,10 @@
 from selenium import webdriver
 from selenium.webdriver.firefox.options import Options
 from selenium.webdriver.common.by import By
-import time, pathlib, platform, os
+import time
+import pathlib
+import platform
+import os
 import datetime
 
 

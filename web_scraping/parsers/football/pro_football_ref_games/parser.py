@@ -1,7 +1,11 @@
-import pandas as pd
 from bs4 import BeautifulSoup
 from io import StringIO
-import pathlib, glob, time, platform, os
+import pandas as pd
+import pathlib
+import glob 
+import time
+import platform
+import os
 
 
 def flatten_links(cell):

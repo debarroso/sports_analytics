@@ -1,7 +1,13 @@
-import pandas as pd
 from bs4 import BeautifulSoup
 from datetime import datetime
-import pathlib, glob, time, platform, os, re, csv
+import pandas as pd
+import pathlib
+import glob
+import time
+import platform
+import os
+import re
+import csv
 
 
 class ProFootballRefPlayersParser():
