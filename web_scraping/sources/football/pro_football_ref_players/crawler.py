@@ -1,19 +1,22 @@
-from selenium import webdriver
-from selenium.webdriver.firefox.options import Options
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.by import By
 import time
 import pathlib
-import platform
 import os
 import psycopg2
+import sys
 
 
-class ProFootballRefPlayersCrawler:
+project_path = pathlib.Path(__file__).parent.parent.parent.parent.parent.resolve()
+sys.path.append(f"{project_path}/")
+from library.classes.parent_crawler import ParentCrawler
+
+
+class ProFootballRefPlayersCrawler(ParentCrawler):
 
     def __init__(self):
-        self.delimiter = "\\" if platform.system() == "Windows" else "/"
-        self.driver = self.initialize_driver()
+        super().__init__()
+        self.driver = self.initialize_driver(headless=False)
         self.current_path = pathlib.Path(__file__).parent.resolve()
         self.source_url = "https://www.pro-football-reference.com"
         
@@ -22,20 +25,6 @@ class ProFootballRefPlayersCrawler:
             "host": "localhost",  # or your database host
             "port": 5432  # default port for PostgreSQL
         }
-
-    def initialize_driver(self):
-        firefox_options = Options()
-        firefox_options.add_argument("--headless")
-
-        user_agent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:121.0) Gecko/20100101 Firefox/121.0"
-        firefox_options.set_preference("general.useragent.override", user_agent)
-        
-        web_scraping_path = f"{pathlib.Path(__file__).parent.parent.parent.parent.resolve()}"
-        driver = webdriver.Firefox(options=firefox_options)
-        driver.install_addon(f"{web_scraping_path}{self.delimiter}tools{self.delimiter}selenium{self.delimiter}extensions{self.delimiter}uBlock0.xpi")
-        
-        driver.maximize_window()
-        return driver
     
     def crawl(self):
         # Connect to the database

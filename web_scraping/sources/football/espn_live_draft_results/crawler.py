@@ -1,38 +1,24 @@
-from selenium import webdriver
-from selenium.webdriver.firefox.options import Options
 from selenium.webdriver.common.by import By
 import datetime
 import time
 import pathlib
 import csv
-import platform
 import os
+import sys
 
 
-delimiter = "\\" if platform.system() == "Windows" else "/"
+project_path = pathlib.Path(__file__).parent.parent.parent.parent.parent.resolve()
+sys.path.append(f"{project_path}/")
+from library.classes.parent_crawler import ParentCrawler
 
 
-class EspnLiveDraftResultsCrawler:
+class EspnLiveDraftResultsCrawler(ParentCrawler):
 
     def __init__(self):
-        self.delimiter = "\\" if platform.system() == "Windows" else "/"        
-        self.driver = self.initialize_driver()
+        super().__init__()      
+        self.driver = self.initialize_driver(headless=False)
         self.current_path = pathlib.Path(__file__).parent.resolve()
         self.source_url = "https://fantasy.espn.com/football/livedraftresults"
-
-    def initialize_driver(self):
-        firefox_options = Options()
-        firefox_options.add_argument("--headless")
-
-        user_agent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:121.0) Gecko/20100101 Firefox/121.0"
-        firefox_options.set_preference("general.useragent.override", user_agent)
-
-        web_scraping_path = f"{pathlib.Path(__file__).parent.parent.parent.parent.resolve()}"
-        driver = webdriver.Firefox(options=firefox_options)
-        driver.install_addon(f"{web_scraping_path}{self.delimiter}tools{self.delimiter}selenium{self.delimiter}extensions{self.delimiter}uBlock0.xpi")
-        
-        driver.maximize_window()
-        return driver
 
     def crawl(self):
         self.driver.get(self.source_url)
@@ -83,7 +69,7 @@ class EspnLiveDraftResultsCrawler:
 
     def save_to_datalake(self):
         timestamp = str(datetime.datetime.now()).replace(' ', '_').split('.')[0]
-        file_path = f"{str(self.current_path).replace('web_scraping', 'datalake')}{delimiter}unprocessed"
+        file_path = f"{str(self.current_path).replace('web_scraping', 'datalake')}{self.delimiter}unprocessed"
         file_name = f"espn_live_draft_results_{timestamp.replace(':', '')}.csv"
 
         if not os.path.exists(file_path):
@@ -92,7 +78,7 @@ class EspnLiveDraftResultsCrawler:
         if not os.path.exists(f"{file_path.replace('unprocessed', 'processed')}"):
             os.makedirs(f"{file_path.replace('unprocessed', 'processed')}")
 
-        with open(f"{file_path}{delimiter}{file_name}", mode='w', encoding='utf-8', newline='') as fp:
+        with open(f"{file_path}{self.delimiter}{file_name}", mode='w', encoding='utf-8', newline='') as fp:
             fieldnames = [
                 "Rank",
                 "Player",
