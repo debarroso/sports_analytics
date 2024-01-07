@@ -16,7 +16,7 @@ class EspnLiveDraftResultsCrawler(ParentCrawler):
 
     def __init__(self):
         super().__init__()      
-        self.driver = self.initialize_driver(headless=False)
+        self.driver = self.initialize_driver()
         self.current_path = pathlib.Path(__file__).parent.resolve()
         self.source_url = "https://fantasy.espn.com/football/livedraftresults"
 
