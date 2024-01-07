@@ -12,11 +12,7 @@ import psycopg2
 class ProFootballRefPlayersCrawler:
 
     def __init__(self):
-        if platform.system == "Windows":
-            self.delimiter = "\\"
-        else:
-            self.delimiter = "/"
-
+        self.delimiter = "\\" if platform.system() == "Windows" else "/"
         self.driver = self.initialize_driver()
         self.current_path = pathlib.Path(__file__).parent.resolve()
         self.source_url = "https://www.pro-football-reference.com"
