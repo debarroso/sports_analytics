@@ -13,7 +13,6 @@ from library.classes.base_crawler import BaseCrawler
 
 
 class ProFootballRefPlayersCrawler(BaseCrawler):
-
     def __init__(self):
         super().__init__()
         self.driver = self.initialize_driver()
