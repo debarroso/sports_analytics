@@ -3,9 +3,9 @@ database/config/*
 resources/*
 testing/*
 __pycache__/
+.idea/
 .vscode
 *.log
 *.DS_Store
-*.idea
 *.env
 *.sh
