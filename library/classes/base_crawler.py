@@ -5,7 +5,7 @@ import pathlib
 import platform
 
 
-class ParentCrawler:
+class BaseCrawler:
 
     def __init__(self):
         self.delimiter = "\\" if platform.system() == "Windows" else "/"

@@ -1,29 +1,23 @@
-from bs4 import BeautifulSoup
 from io import StringIO
 import pandas as pd
 import pathlib
-import glob 
 import time
-import platform
 import os
+import sys
 
 
-def flatten_links(cell):
-    if cell[1] is None:
-        return cell[0]
-    else:
-        return f"{cell[0]}^{cell[1]}"
+project_path = pathlib.Path(__file__).parent.parent.parent.parent.parent.resolve()
+sys.path.append(f"{project_path}/")
+from library.classes.base_parser import BaseParser
 
-class ProFootballRefGamesParser():
 
-    def __init__(self, file_name="*"):
-        self.current_path = pathlib.Path(__file__).parent.resolve()
-        self.delimiter = "\\" if platform.system() == "Windows" else "/"
-        self.datalake_path = str(self.current_path).replace("web_scraping", "datalake").replace("parsers", "sources")
-        self.parsed_path = str(self.current_path).replace("web_scraping", "datalake").replace("parsers", "parsed")
-        self.files = self.get_files(file_name=file_name)
-        if len(self.files) == 0:
-            exit()
+class ProFootballRefGamesParser(BaseParser):
+
+    def __init__(self, glob_string="*"):
+        super().__init__(
+            parser_path=pathlib.Path(__file__).parent.resolve(),
+            glob_string=glob_string
+        )
         self.tables = {
             "game_details": [],
             "team_stats": [],
@@ -79,19 +73,17 @@ class ProFootballRefGamesParser():
 
             print(f"Processing {game_file.split(self.delimiter)[-1]} took {time.perf_counter() - start_time}")
 
-    def get_files(self, file_name="*"):
-        return glob.glob(f"{self.datalake_path}{self.delimiter}unprocessed{self.delimiter}{file_name}")
-
-    def get_soup(self, file_name=""):
-        with open(file_name, mode="r", encoding="utf-8") as fp:
-            soup = BeautifulSoup(fp, features="lxml")
-        return soup
-
     def clean_header(self, header=[]):
         return [c.replace(' ', '_').strip(".").lower() for c in header]
 
     def get_game_date(self, game_id=""):
         return f"{game_id[0:4]}-{game_id[4:6]}-{game_id[6:8]}"
+    
+    def flatten_links(self, cell):
+        if cell[1] is None:
+            return cell[0]
+        else:
+            return f"{cell[0]}^{cell[1]}"
 
     def get_game_result(self, score, opp_score):
         score = int(score)
@@ -590,7 +582,7 @@ class ProFootballRefGamesParser():
         basic_table = tables[0].iloc[:, slice_dict[stat_type]]
         basic_table.columns = basic_table.columns.map('_'.join).str.strip('_')
         basic_table = basic_table.rename(columns=basic_columns_dict[stat_type])
-        basic_table = basic_table.applymap(flatten_links)
+        basic_table = basic_table.applymap(self.flatten_links)
         for column in basic_columns_to_convert_dict[stat_type]:
             basic_table[column] = basic_table[column].apply(pd.to_numeric, errors="coerce")
         
@@ -618,7 +610,7 @@ class ProFootballRefGamesParser():
         if len(tables) == 1:
             return
 
-        advanced_table = tables[1].applymap(flatten_links)
+        advanced_table = tables[1].applymap(self.flatten_links)
         advanced_table = advanced_table.rename(columns=advanced_columns_dict[stat_type])
 
         for column in advanced_columns_to_convert_dict[stat_type]:

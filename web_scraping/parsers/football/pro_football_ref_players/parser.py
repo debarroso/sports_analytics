@@ -1,23 +1,25 @@
-from bs4 import BeautifulSoup
 from datetime import datetime
 import pandas as pd
 import pathlib
-import glob
 import time
-import platform
 import os
 import re
 import csv
+import sys
 
 
-class ProFootballRefPlayersParser():
+project_path = pathlib.Path(__file__).parent.parent.parent.parent.parent.resolve()
+sys.path.append(f"{project_path}/")
+from library.classes.base_parser import BaseParser
 
-    def __init__(self, file_name="*"):
-        self.current_path = pathlib.Path(__file__).parent.resolve()
-        self.delimiter = "\\" if platform.system() == "Windows" else "/"
-        self.datalake_path = str(self.current_path).replace("web_scraping", "datalake").replace("parsers", "sources")
-        self.parsed_path = str(self.current_path).replace("web_scraping", "datalake").replace("parsers", "parsed")
-        self.files = self.get_files(file_name=file_name)
+
+class ProFootballRefPlayersParser(BaseParser):
+
+    def __init__(self, glob_string="*"):
+        super().__init__(
+            parser_path=pathlib.Path(__file__).parent.resolve(),
+            glob_string=glob_string
+        )
         self.fieldnames = [
             "id",
             "name",
@@ -38,8 +40,6 @@ class ProFootballRefPlayersParser():
             "three_cone",
             "vertical"
         ]
-        if len(self.files) == 0:
-            exit()
         self.data = []
 
     def parse(self):
@@ -50,14 +50,6 @@ class ProFootballRefPlayersParser():
             self.extract_player_details(player_file)
             print(f"Processing file {player_file.split(self.delimiter)[-1]} took {time.perf_counter() - start_time}")
             os.rename(player_file, player_file.replace("unprocessed", "processed"))
-
-    def get_files(self, file_name="*"):
-        return glob.glob(f"{self.datalake_path}{self.delimiter}unprocessed{self.delimiter}{file_name}")
-
-    def get_soup(self, file_name=""):
-        with open(file_name, mode="r", encoding="utf-8") as fp:
-            soup = BeautifulSoup(fp, features="lxml")
-        return soup
 
     def extract_player_details(self, file_name=""):
         player_data = {}

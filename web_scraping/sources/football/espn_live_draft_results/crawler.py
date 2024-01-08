@@ -9,10 +9,10 @@ import sys
 
 project_path = pathlib.Path(__file__).parent.parent.parent.parent.parent.resolve()
 sys.path.append(f"{project_path}/")
-from library.classes.parent_crawler import ParentCrawler
+from library.classes.base_crawler import BaseCrawler
 
 
-class EspnLiveDraftResultsCrawler(ParentCrawler):
+class EspnLiveDraftResultsCrawler(BaseCrawler):
 
     def __init__(self):
         super().__init__()      
