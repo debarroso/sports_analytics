@@ -11,7 +11,7 @@ class BaseCrawler:
 
     def __init__(self):
         self.delimiter = "\\" if platform.system() == "Windows" else "/"
-        self.prime_numbers_list = [2, 2, 2, 3, 3, 3, 3, 5, 5, 5, 5, 7, 7, 7, 11, 11, 13]
+        self.prime_numbers_list = [2, 2, 3, 3, 3, 3, 5, 5, 5, 5, 7, 7, 7, 11, 11, 13]
 
     def initialize_driver(self, headless=True):
         web_scraping_path = f"{pathlib.Path(__file__).parent.parent.parent.resolve()}{self.delimiter}web_scraping"
