@@ -16,7 +16,7 @@ class EspnLiveDraftResultsCrawler(BaseCrawler):
 
     def __init__(self):
         super().__init__()      
-        self.driver = self.initialize_driver()
+        self.driver = self.initialize_driver(headless=False)
         self.current_path = pathlib.Path(__file__).parent.resolve()
         self.source_url = "https://fantasy.espn.com/football/livedraftresults"
 
@@ -31,8 +31,9 @@ class EspnLiveDraftResultsCrawler(BaseCrawler):
         count = 1
         while next_button.is_enabled():
             rankings += self.get_table_stats()
+            self.random_sleep()
             next_button.click()
-            time.sleep(3)
+            
             count += 1
             if count > 10:
                 break

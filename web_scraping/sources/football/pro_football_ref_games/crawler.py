@@ -26,6 +26,7 @@ class ProFootballRefGamesCrawler(BaseCrawler):
         boxscores = []
         for year in range(begin, end):
 
+            self.random_sleep()
             self.driver.get(f"{self.source_url}/years/{year}/games.htm")
             elements = self.driver.find_elements(By.LINK_TEXT, "boxscore")
 
@@ -64,7 +65,9 @@ class ProFootballRefGamesCrawler(BaseCrawler):
 
                 print(file_name)
 
+                self.random_sleep()
                 self.driver.get(link)
+                
                 with open(full_path, mode='w', encoding='utf-8') as fp:
                     fp.write(self.driver.page_source)
 

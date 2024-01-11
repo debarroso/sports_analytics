@@ -81,6 +81,7 @@ class ProFootballRefPlayersCrawler(BaseCrawler):
 
             print(f"Processing file: {file_name}")
 
+            self.random_sleep()
             self.driver.get(f"{self.source_url}{link}")
 
             try:
