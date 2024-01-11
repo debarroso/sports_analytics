@@ -33,7 +33,7 @@ class BaseCrawler:
         driver.maximize_window()
         return driver
     
-    def random_sleep(self, number_of_shuffles=3):
+    def random_sleep(self, number_of_shuffles=5):
         for i in range(number_of_shuffles):
             random.shuffle(self.prime_numbers_list)
 
