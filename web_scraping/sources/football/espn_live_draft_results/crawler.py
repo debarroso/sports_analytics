@@ -21,8 +21,10 @@ class EspnLiveDraftResultsCrawler(BaseCrawler):
         self.source_url = "https://fantasy.espn.com/football/livedraftresults"
 
     def crawl(self):
+        self.random_sleep()
         self.driver.get(self.source_url)
-        time.sleep(8)
+        time.sleep(10)
+
         nav = self.driver.find_elements(By.TAG_NAME, "nav")
         buttons = nav[2].find_elements(By.TAG_NAME, "button")
         next_button = buttons[1]
@@ -58,8 +60,8 @@ class EspnLiveDraftResultsCrawler(BaseCrawler):
         for row in table.find_elements(By.TAG_NAME, "tr"):
             row_dict = {}
             elements = row.find_elements(By.TAG_NAME, "td")
+            
             count = 0
-
             for element in elements:
                 row_dict[header_dict[count]] = element.text
                 count += 1
