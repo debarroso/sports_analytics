@@ -34,7 +34,7 @@ class BaseCrawler:
         return driver
     
     def random_sleep(self, number_of_shuffles=5):
-        for i in range(number_of_shuffles):
+        for _ in range(number_of_shuffles):
             random.shuffle(self.prime_numbers_list)
 
         time.sleep(self.prime_numbers_list[0])
