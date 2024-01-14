@@ -18,7 +18,7 @@ class ProFootballRefGamesParser(BaseParser):
             parser_path=pathlib.Path(__file__).parent.resolve(),
             glob_string=glob_string
         )
-        self.tables = {
+        self.data = {
             "game_details": [],
             "team_stats": [],
             "passing_stats": {
@@ -139,7 +139,7 @@ class ProFootballRefGamesParser(BaseParser):
         game_details = {"game_id": game_id, "game_date": game_date, "game_time": game_time}
         game_details.update({**game_info_dict, **officials_dict})
 
-        self.tables["game_details"].append(game_details)
+        self.data["game_details"].append(game_details)
 
     def extract_team_stats(self, file_name=""):
         game_id = self.game_id
@@ -204,8 +204,8 @@ class ProFootballRefGamesParser(BaseParser):
         away_team_dict.update(**away_stats_dict)
         home_team_dict.update(**home_stats_dict)
         
-        self.tables["team_stats"].append(away_team_dict)
-        self.tables["team_stats"].append(home_team_dict)
+        self.data["team_stats"].append(away_team_dict)
+        self.data["team_stats"].append(home_team_dict)
 
     def extract_numeric_stats(self, stat_type, file_name=""):
         game_id = self.game_id
@@ -605,7 +605,7 @@ class ProFootballRefGamesParser(BaseParser):
         if not basic_table.empty:
             basic_table.insert(0, 'game_date', game_date)
             basic_table.insert(0, 'game_id', game_id)
-            self.tables[table_keys[stat_type]]["basic"].append(basic_table)
+            self.data[table_keys[stat_type]]["basic"].append(basic_table)
 
         if len(tables) == 1:
             return
@@ -629,27 +629,27 @@ class ProFootballRefGamesParser(BaseParser):
         if not advanced_table.empty:
             advanced_table.insert(0, 'game_date', game_date)
             advanced_table.insert(0, 'game_id', game_id)
-            self.tables[table_keys[stat_type]]["advanced"].append(advanced_table)
+            self.data[table_keys[stat_type]]["advanced"].append(advanced_table)
 
     def save_parsed_data(self):
-        for table in self.tables:
+        for table in self.data:
             
             if table in ["game_details", "team_stats"]:
-                combined_df = pd.DataFrame(self.tables[table])
+                combined_df = pd.DataFrame(self.data[table])
                 combined_df.to_csv(f"{self.parsed_path}{self.delimiter}{table}.csv", index=False, header=True)
 
-            elif len(self.tables[table]) == 1:
-                if len(self.tables[table]["basic"]) > 0:
-                    combined_df = pd.concat(self.tables[table]["basic"], ignore_index=True)
+            elif len(self.data[table]) == 1:
+                if len(self.data[table]["basic"]) > 0:
+                    combined_df = pd.concat(self.data[table]["basic"], ignore_index=True)
                     combined_df.to_csv(f"{self.parsed_path}{self.delimiter}{table}.csv", index=False, header=True)
 
             else:
-                if len(self.tables[table]["basic"]) > 0:
-                    combined_df = pd.concat(self.tables[table]["basic"], ignore_index=True)
+                if len(self.data[table]["basic"]) > 0:
+                    combined_df = pd.concat(self.data[table]["basic"], ignore_index=True)
                     combined_df.to_csv(f"{self.parsed_path}{self.delimiter}{table}_basic.csv", index=False, header=True)
 
-                if len(self.tables[table]["advanced"]) > 0:
-                    combined_df = pd.concat(self.tables[table]["advanced"], ignore_index=True)
+                if len(self.data[table]["advanced"]) > 0:
+                    combined_df = pd.concat(self.data[table]["advanced"], ignore_index=True)
                     combined_df.to_csv(f"{self.parsed_path}{self.delimiter}{table}_advanced.csv", index=False, header=True)
 
 
