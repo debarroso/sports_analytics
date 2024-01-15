@@ -1,10 +1,9 @@
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.by import By
-import time
 import pathlib
-import os
-import psycopg2
+import time
 import sys
+import os
 
 
 project_path = pathlib.Path(__file__).parent.parent.parent.parent.parent.resolve()
@@ -13,22 +12,24 @@ from library.classes.base_crawler import BaseCrawler
 
 
 class ProFootballRefPlayersCrawler(BaseCrawler):
-    def __init__(self):
-        super().__init__()
-        self.driver = self.initialize_driver()
-        self.current_path = pathlib.Path(__file__).parent.resolve()
+    def __init__(self, headless=True):
+        super().__init__(
+            crawler_path=pathlib.Path(__file__).resolve().parent
+        )
+        self.logger = self.get_logger()
+        self.driver = self.initialize_driver(headless=headless)
         self.source_url = "https://www.pro-football-reference.com"
-        
-        self.db_config = {
-            "dbname": "nfl_statistics",
-            "host": "localhost",  # or your database host
-            "port": 5432  # default port for PostgreSQL
-        }
+        self.db_connection = self.get_db_connection(
+            db_config={
+                "dbname": "nfl_statistics",
+                "host": "localhost",  # or your database host
+                "port": 5432  # default port for PostgreSQL
+            }
+        )
     
     def crawl(self):
-        # Connect to the database
-        conn = psycopg2.connect(**self.db_config)
-        cursor = conn.cursor()
+        # get cursor for db
+        cursor = self.db_connection.cursor()
 
         sql_query = f"""
             select distinct player from (
@@ -62,24 +63,19 @@ class ProFootballRefPlayersCrawler(BaseCrawler):
         self.links = [row[0].split("^")[1] for row in results]
 
     def save_to_datalake(self, limit=3):
-        print(f"There are {len(self.links)} unique players")
+        self.logger.info(f"There are {len(self.links)} unique players in the database")
         for link in self.links:
             file_name = link[1:].replace("/", "_")
-            file_path = f"{str(self.current_path).replace('web_scraping', 'datalake')}{self.delimiter}unprocessed"
-            full_path = f"{file_path}{self.delimiter}{file_name}"
+
+            unprocessed_file_path = self.unprocessed_path / file_name
+            processed_file_path = self.processed_path / file_name
             
-            if not os.path.exists(file_path):
-                os.makedirs(file_path)
-
-            if not os.path.exists(file_path.replace("unprocessed", "processed")):
-                os.makedirs(file_path.replace("unprocessed", "processed"))
-
-            if pathlib.Path(full_path).is_file():
+            if unprocessed_file_path.is_file():
                 continue
-            elif pathlib.Path(full_path.replace("unprocessed", "processed")).is_file():
+            elif processed_file_path.is_file():
                 continue
 
-            print(f"Processing file: {file_name}")
+            self.logger.info(f"Processing file: {file_name}")
 
             self.random_sleep()
             self.driver.get(f"{self.source_url}{link}")
@@ -88,15 +84,15 @@ class ProFootballRefPlayersCrawler(BaseCrawler):
                 element = self.driver.find_element(by=By.ID, value="meta_more_button")
                 self.driver.execute_script("arguments[0].click();", element)
             except NoSuchElementException:
-                print(f"No meta button on page: {link}")
+                self.logger.info(f"No meta button on page: {link}")
 
             try:
                 element = self.driver.find_element(By.ID, "transactions_toggler")
                 self.driver.execute_script("arguments[0].click();", element)
             except NoSuchElementException:
-                print(f"No transactions link on page: {link}")
+                self.logger.info(f"No transactions link on page: {link}")
 
-            with open(full_path, mode='w', encoding='utf-8') as fp:
+            with unprocessed_file_path.open(mode='w', encoding='utf-8') as fp:
                 fp.write(self.driver.page_source)
 
             time.sleep(limit)

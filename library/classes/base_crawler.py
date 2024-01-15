@@ -1,23 +1,38 @@
 from selenium import webdriver
 from selenium.webdriver.firefox.options import Options
 from selenium.webdriver.firefox.service import Service
+import psycopg2
 import pathlib
-import platform
+import logging
 import random
 import time
 
 
 class BaseCrawler:
 
-    def __init__(self):
-        self.delimiter = "\\" if platform.system() == "Windows" else "/"
-        self.prime_numbers_list = [2, 2, 3, 3, 3, 3, 5, 5, 5, 5, 7, 7, 7, 11, 11, 13]
+    def __init__(
+            self,
+            crawler_path,
+        ):
+        self.base_path = pathlib.Path(__file__).parents[2].resolve()
+        self.crawler_path = crawler_path
+        self.crawler_name = crawler_path.parts[-1]
+        self.datalake_path = pathlib.Path(str(self.crawler_path).replace('web_scraping', 'datalake'))
+        
+        self.unprocessed_path = self.datalake_path / "unprocessed"
+        self.unprocessed_path.mkdir(parents=True, exist_ok=True)
+        
+        self.processed_path = self.datalake_path / "processed"
+        self.processed_path.mkdir(parents=True, exist_ok=True)
+        
+        self.web_scraping_tools_path = self.base_path / "web_scraping" / "tools"
+        self.geckodriver_path = self.web_scraping_tools_path / "selenium" / "geckodriver"
+        self.driver_logs_path = self.web_scraping_tools_path / "selenium" / "geckodriver.log"
 
     def initialize_driver(self, headless=True):
-        base_path = f"{pathlib.Path(__file__).parent.parent.parent.resolve()}{self.delimiter}web_scraping"
         firefox_service = Service(
-            executable_path=f"{base_path}{self.delimiter}tools{self.delimiter}selenium{self.delimiter}geckodriver",
-            log_path=f"{base_path}{self.delimiter}tools{self.delimiter}selenium{self.delimiter}geckodriver.log"
+            executable_path=str(self.geckodriver_path),
+            log_path=str(self.driver_logs_path)
         )
 
         firefox_options = Options()
@@ -28,13 +43,22 @@ class BaseCrawler:
         firefox_options.set_preference("general.useragent.override", user_agent)
 
         driver = webdriver.Firefox(options=firefox_options, service=firefox_service)
-        driver.install_addon(f"{base_path}{self.delimiter}tools{self.delimiter}selenium{self.delimiter}extensions{self.delimiter}uBlock0.xpi")
+        driver.install_addon(str(self.web_scraping_tools_path / "selenium" / "extensions" / "uBlock0.xpi"))
         
         driver.maximize_window()
         return driver
     
-    def random_sleep(self, number_of_shuffles=5):
-        for _ in range(number_of_shuffles):
-            random.shuffle(self.prime_numbers_list)
+    def random_sleep(self):
+        ranges = [(3, 7), (7, 11), (11, 20)]
+        weights = [0.3, 0.6, 0.1]
 
-        time.sleep(self.prime_numbers_list[0])
+        selected_range = random.choices(ranges, weights=weights, k=1)[0]
+        sleep_time = random.uniform(*selected_range)
+        time.sleep(sleep_time)
+
+    def get_logger(self, format="%(asctime)s - %(levelname)s - %(message)s"):
+        logging.basicConfig(level=logging.INFO, format=format)
+        return logging.getLogger(self.crawler_name)
+    
+    def get_db_connection(self, db_config={}):
+        return psycopg2.connect(**db_config)

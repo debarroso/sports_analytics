@@ -1,28 +1,26 @@
 from selenium.webdriver.common.by import By
-import time
 import pathlib
-import os
 import datetime
 import sys
 
 
-project_path = pathlib.Path(__file__).parent.parent.parent.parent.parent.resolve()
+project_path = pathlib.Path(__file__).resolve().parents[4]
 sys.path.append(f"{project_path}/")
 from library.classes.base_crawler import BaseCrawler
 
 
 class ProFootballRefGamesCrawler(BaseCrawler):
 
-    def __init__(self):
-        super().__init__()
-        self.driver = self.initialize_driver()
-        self.current_path = pathlib.Path(__file__).parent.resolve()
+    def __init__(self, headless=True):
+        super().__init__(
+            crawler_path=pathlib.Path(__file__).resolve().parent
+        )
+        self.logger = self.get_logger()
+        self.driver = self.initialize_driver(headless=headless)
         self.source_url = "https://www.pro-football-reference.com"
+        self.today = datetime.date.today()
     
-    def crawl(self):
-        self.links = self.get_boxscores(2023, 2024)
-
-    def get_boxscores(self, begin=2023, end=2024):
+    def crawl(self, begin=2023, end=2024):
         boxscores = []
         for year in range(begin, end):
 
@@ -32,46 +30,38 @@ class ProFootballRefGamesCrawler(BaseCrawler):
 
             boxscores += [element.get_attribute("href") for element in elements]
 
-        return boxscores
+        self.links = boxscores
 
     def get_game_date(self, link):
         game_id = link.split("/")[-1][:-4]
-        return f"{game_id[0:4]}-{game_id[4:6]}-{game_id[6:8]}"
+        year = int(game_id[0:4])
+        month = int(game_id[4:6])
+        day = int(game_id[6:8])
+        return datetime.date(year, month, day)
 
-    def save_to_datalake(self, limit=5):
+    def save_to_datalake(self):
         for link in self.links:
-            today = datetime.date.today()
-            date_string = self.get_game_date(link)
-            year = int(date_string.split("-")[0])
-            month = int(date_string.split("-")[1])
-            day = int(date_string.split("-")[2])
-            game_date = datetime.date(year, month, day)
+            game_date = self.get_game_date(link)
 
-            if today - datetime.timedelta(days=3) >= game_date:
+            if self.today - datetime.timedelta(days=3) >= game_date:
                 file_name = link.split('/')[-1]
-                file_path = f"{str(self.current_path).replace('web_scraping', 'datalake')}{self.delimiter}unprocessed"
-                full_path = f"{file_path}{self.delimiter}{file_name}"
+                
+                unprocessed_file_path = self.unprocessed_path / file_name
+                processed_file_path = self.processed_path / file_name
 
-                if not os.path.exists(file_path):
-                    os.makedirs(file_path)
-
-                if not os.path.exists(file_path.replace("unprocessed", "processed")):
-                    os.makedirs(file_path.replace("unprocessed", "processed"))
-
-                if pathlib.Path(full_path).is_file():
+                if unprocessed_file_path.is_file():
                     continue
-                elif pathlib.Path(full_path.replace("unprocessed", "processed")).is_file():
+                elif processed_file_path.is_file():
                     continue
 
-                print(file_name)
-
+                self.logger.info(f"Saving {file_name} to datalake")
                 self.random_sleep()
                 self.driver.get(link)
                 
-                with open(full_path, mode='w', encoding='utf-8') as fp:
+                with unprocessed_file_path.open(mode='w', encoding='utf-8') as fp:
                     fp.write(self.driver.page_source)
 
-                time.sleep(limit)
+                self.random_sleep()
 
         self.driver.close()
 
@@ -80,4 +70,3 @@ if __name__ == "__main__":
     crawler = ProFootballRefGamesCrawler()
     crawler.crawl()
     crawler.save_to_datalake()
-    

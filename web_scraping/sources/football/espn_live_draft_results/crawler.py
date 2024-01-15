@@ -1,9 +1,8 @@
 from selenium.webdriver.common.by import By
 import datetime
-import time
 import pathlib
+import time
 import csv
-import os
 import sys
 
 
@@ -14,14 +13,14 @@ from library.classes.base_crawler import BaseCrawler
 
 class EspnLiveDraftResultsCrawler(BaseCrawler):
 
-    def __init__(self):
-        super().__init__()      
-        self.driver = self.initialize_driver(headless=False)
-        self.current_path = pathlib.Path(__file__).parent.resolve()
+    def __init__(self, headless=True):
+        super().__init__(
+            crawler_path=pathlib.Path(__file__).resolve().parent
+        )      
+        self.driver = self.initialize_driver(headless=headless)
         self.source_url = "https://fantasy.espn.com/football/livedraftresults"
 
     def crawl(self):
-        self.random_sleep()
         self.driver.get(self.source_url)
         time.sleep(10)
 
@@ -72,16 +71,10 @@ class EspnLiveDraftResultsCrawler(BaseCrawler):
 
     def save_to_datalake(self):
         timestamp = str(datetime.datetime.now()).replace(' ', '_').split('.')[0]
-        file_path = f"{str(self.current_path).replace('web_scraping', 'datalake')}{self.delimiter}unprocessed"
         file_name = f"espn_live_draft_results_{timestamp.replace(':', '')}.csv"
+        file_path = self.unprocessed_path / file_name
 
-        if not os.path.exists(file_path):
-            os.makedirs(file_path)
-
-        if not os.path.exists(f"{file_path.replace('unprocessed', 'processed')}"):
-            os.makedirs(f"{file_path.replace('unprocessed', 'processed')}")
-
-        with open(f"{file_path}{self.delimiter}{file_name}", mode='w', encoding='utf-8', newline='') as fp:
+        with file_path.open(mode='w', encoding='utf-8', newline='') as fp:
             fieldnames = [
                 "Rank",
                 "Player",
