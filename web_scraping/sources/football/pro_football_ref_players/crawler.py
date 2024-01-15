@@ -1,7 +1,6 @@
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.by import By
 import pathlib
-import time
 import sys
 
 
@@ -61,7 +60,7 @@ class ProFootballRefPlayersCrawler(BaseCrawler):
 
         self.links = [row[0].split("^")[1] for row in results]
 
-    def save_to_datalake(self, limit=3):
+    def save_to_datalake(self):
         self.logger.info(f"There are {len(self.links)} unique players in the database")
         for link in self.links:
             file_name = link[1:].replace("/", "_")
@@ -94,7 +93,7 @@ class ProFootballRefPlayersCrawler(BaseCrawler):
             with unprocessed_file_path.open(mode='w', encoding='utf-8') as fp:
                 fp.write(self.driver.page_source)
 
-            time.sleep(limit)
+            self.random_sleep()
 
         self.driver.close()
 
