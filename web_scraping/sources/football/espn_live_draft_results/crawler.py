@@ -33,11 +33,12 @@ class EspnLiveDraftResultsCrawler(BaseCrawler):
         while next_button.is_enabled():
             rankings += self.get_table_stats()
             self.random_sleep()
-            next_button.click()
             
             count += 1
             if count > 10:
                 break
+
+            next_button.click()
 
         self.data = rankings
         self.driver.close()
