@@ -3,7 +3,6 @@ from selenium.webdriver.common.by import By
 import pathlib
 import time
 import sys
-import os
 
 
 project_path = pathlib.Path(__file__).parent.parent.parent.parent.parent.resolve()
@@ -19,7 +18,7 @@ class ProFootballRefPlayersCrawler(BaseCrawler):
         self.logger = self.get_logger()
         self.driver = self.initialize_driver(headless=headless)
         self.source_url = "https://www.pro-football-reference.com"
-        self.db_connection = self.get_db_connection(
+        self.db_connection = self.get_postgres_connection(
             db_config={
                 "dbname": "nfl_statistics",
                 "host": "localhost",  # or your database host

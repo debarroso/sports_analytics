@@ -60,5 +60,5 @@ class BaseCrawler:
         logging.basicConfig(level=logging.INFO, format=format)
         return logging.getLogger(self.crawler_name)
     
-    def get_db_connection(self, db_config={}):
+    def get_postgres_connection(self, db_config={}):
         return psycopg2.connect(**db_config)
