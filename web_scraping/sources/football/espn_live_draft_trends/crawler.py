@@ -11,7 +11,7 @@ sys.path.append(f"{project_path}/")
 from library.classes.base_crawler import BaseCrawler
 
 
-class EspnLiveDraftResultsCrawler(BaseCrawler):
+class EspnLiveDraftTrendsCrawler(BaseCrawler):
 
     def __init__(self, headless=True):
         super().__init__(
@@ -72,7 +72,7 @@ class EspnLiveDraftResultsCrawler(BaseCrawler):
         return rankings
 
     def save_to_datalake(self):
-        file_name = f"espn_live_draft_results_{self.today}.csv"
+        file_name = f"espn_live_draft_trends_{self.today}.csv"
         file_path = self.unprocessed_path / file_name
 
         with file_path.open(mode='w', encoding='utf-8', newline='') as fp:
@@ -101,7 +101,7 @@ class EspnLiveDraftResultsCrawler(BaseCrawler):
 
 
 if __name__ == "__main__":
-    crawler = EspnLiveDraftResultsCrawler()
+    crawler = EspnLiveDraftTrendsCrawler(headless=False)
     crawler.crawl()
     crawler.save_to_datalake()
     

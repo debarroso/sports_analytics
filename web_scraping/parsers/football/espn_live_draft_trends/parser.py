@@ -10,7 +10,7 @@ sys.path.append(f"{project_path}/")
 from library.classes.base_parser import BaseParser
 
 
-class EspnLiveDraftResultsParser(BaseParser):
+class EspnLiveDraftTrendsParser(BaseParser):
     def __init__(self, glob_string="*"):
         super().__init__(
             parser_path=pathlib.Path(__file__).parent.resolve(),
@@ -32,14 +32,14 @@ class EspnLiveDraftResultsParser(BaseParser):
             self.move_to_processed(draft_result_file)
 
     def save_parsed_data(self):
-        parsed_file_path = self.parsed_path / "draft_results.csv"
+        parsed_file_path = self.parsed_path / "draft_trends.csv"
         combined_df = pd.concat(self.data, ignore_index=True)
         combined_df.to_csv(str(parsed_file_path), index=False, header=True)
 
 
 if __name__ == "__main__":
     run_start = time.perf_counter()
-    parser = EspnLiveDraftResultsParser()
+    parser = EspnLiveDraftTrendsParser()
     parser.parse()
     parser.save_parsed_data()
     parser.logger.info(f"Total run time = {time.perf_counter() - run_start}")
