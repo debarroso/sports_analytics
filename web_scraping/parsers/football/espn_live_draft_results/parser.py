@@ -1,5 +1,7 @@
-import time
+import pandas as pd
+import datetime
 import pathlib
+import time
 import sys
 
 
@@ -17,12 +19,20 @@ class EspnLiveDraftResultsParser(BaseParser):
         self.data = []
     
     def parse(self):
-        for draft_result_file in self.files():
-            with open(draft_result_file) as f:
-                pass
+        for draft_result_file in self.files:
+            df = pd.read_csv(draft_result_file)
+
+            file_date_string = draft_result_file.split("_")[-1].replace(".csv", "")
+            date_object = pd.to_datetime(file_date_string).date()
+            df.insert(0, "date", date_object)
+            self.data.append(df)
+
+            self.move_to_processed(draft_result_file)
 
     def save_parsed_data(self):
-        pass
+        parsed_file_path = self.parsed_path / "draft_results.csv"
+        combined_df = pd.concat(self.data, ignore_index=True)
+        combined_df.to_csv(str(parsed_file_path), index=False, header=True)
 
 
 if __name__ == "__main__":

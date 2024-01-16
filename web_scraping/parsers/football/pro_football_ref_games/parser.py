@@ -2,7 +2,6 @@ from io import StringIO
 import pandas as pd
 import pathlib
 import time
-import os
 import sys
 
 
@@ -18,6 +17,7 @@ class ProFootballRefGamesParser(BaseParser):
             parser_path=pathlib.Path(__file__).parent.resolve(),
             glob_string=glob_string
         )
+        self.logger = self.get_logger()
         self.data = {
             "game_details": [],
             "team_stats": [],
@@ -63,15 +63,14 @@ class ProFootballRefGamesParser(BaseParser):
             start_time = time.perf_counter()
             self.soup = self.get_soup(file_name=game_file)
             self.soup_str = str(self.soup)
-            self.game_id = game_file.split(".")[0].split(self.delimiter)[-1]
+            self.game_id = str(pathlib.Path(game_file).parts[-1]).replace(".htm", "")
             self.extract_game_details(file_name=game_file)
             self.extract_team_stats(file_name=game_file)
             for stat_type in stat_types:
                 self.extract_numeric_stats(stat_type=stat_type, file_name=game_file)
 
-            os.rename(game_file, game_file.replace("unprocessed", "processed"))
-
-            print(f"Processing {game_file.split(self.delimiter)[-1]} took {time.perf_counter() - start_time}")
+            self.logger.info(f"Processing {pathlib.Path(game_file).parts[-1]} took {time.perf_counter() - start_time}")
+            self.move_to_processed(game_file)
 
     def clean_header(self, header=[]):
         return [c.replace(' ', '_').strip(".").lower() for c in header]
@@ -112,7 +111,7 @@ class ProFootballRefGamesParser(BaseParser):
         except ValueError as e:
             
             if "No tables found" in str(e):
-                print(f"no game info table found in {file_name}")
+                self.logger.warning(f"no game info table found in {file_name}")
 
             else:
                 raise
@@ -126,7 +125,7 @@ class ProFootballRefGamesParser(BaseParser):
         except ValueError as e:
             
             if "No tables found" in str(e):
-                print(f"no officials table found in {file_name}")
+                self.logger.info(f"no officials table found in {file_name}")
 
             else:
                 raise
@@ -571,7 +570,7 @@ class ProFootballRefGamesParser(BaseParser):
         except ValueError as e:
             
             if "No tables found" in str(e):
-                print(f"{stat_type} table not found in {file_name}")
+                self.logger.warning(f"{stat_type} table not found in {file_name}")
                 return
 
             else:
@@ -633,24 +632,26 @@ class ProFootballRefGamesParser(BaseParser):
 
     def save_parsed_data(self):
         for table in self.data:
+
+            table_path = self.parsed_path / table
             
             if table in ["game_details", "team_stats"]:
                 combined_df = pd.DataFrame(self.data[table])
-                combined_df.to_csv(f"{self.parsed_path}{self.delimiter}{table}.csv", index=False, header=True)
+                combined_df.to_csv(f"{str(table_path)}.csv", index=False, header=True)
 
             elif len(self.data[table]) == 1:
                 if len(self.data[table]["basic"]) > 0:
                     combined_df = pd.concat(self.data[table]["basic"], ignore_index=True)
-                    combined_df.to_csv(f"{self.parsed_path}{self.delimiter}{table}.csv", index=False, header=True)
+                    combined_df.to_csv(f"{str(table_path)}.csv", index=False, header=True)
 
             else:
                 if len(self.data[table]["basic"]) > 0:
                     combined_df = pd.concat(self.data[table]["basic"], ignore_index=True)
-                    combined_df.to_csv(f"{self.parsed_path}{self.delimiter}{table}_basic.csv", index=False, header=True)
+                    combined_df.to_csv(f"{str(table_path)}_basic.csv", index=False, header=True)
 
                 if len(self.data[table]["advanced"]) > 0:
                     combined_df = pd.concat(self.data[table]["advanced"], ignore_index=True)
-                    combined_df.to_csv(f"{self.parsed_path}{self.delimiter}{table}_advanced.csv", index=False, header=True)
+                    combined_df.to_csv(f"{str(table_path)}_advanced.csv", index=False, header=True)
 
 
 if __name__ == "__main__":
@@ -658,5 +659,5 @@ if __name__ == "__main__":
     parser = ProFootballRefGamesParser()
     parser.parse()
     parser.save_parsed_data()
-    print(f"Total run time = {time.perf_counter() - run_start}")
+    parser.logger.info(f"Total run time = {time.perf_counter() - run_start}")
     

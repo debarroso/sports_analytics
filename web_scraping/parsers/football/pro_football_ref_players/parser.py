@@ -2,10 +2,9 @@ from datetime import datetime
 import pandas as pd
 import pathlib
 import time
-import os
-import re
 import csv
 import sys
+import re
 
 
 project_path = pathlib.Path(__file__).parent.parent.parent.parent.parent.resolve()
@@ -20,6 +19,7 @@ class ProFootballRefPlayersParser(BaseParser):
             parser_path=pathlib.Path(__file__).parent.resolve(),
             glob_string=glob_string
         )
+        self.logger = self.get_logger()
         self.fieldnames = [
             "id",
             "name",
@@ -40,7 +40,6 @@ class ProFootballRefPlayersParser(BaseParser):
             "three_cone",
             "vertical"
         ]
-        self.data = []
 
     def parse(self):
         for player_file in self.files:
@@ -48,12 +47,15 @@ class ProFootballRefPlayersParser(BaseParser):
             self.soup = self.get_soup(file_name=player_file)
             self.soup_str = str(self.soup)
             self.extract_player_details(player_file)
-            print(f"Processing file {player_file.split(self.delimiter)[-1]} took {time.perf_counter() - start_time}")
-            os.rename(player_file, player_file.replace("unprocessed", "processed"))
+
+            self.logger.info(f"Processing file {pathlib.Path(player_file).parts[-1]} took {time.perf_counter() - start_time}")
+            self.move_to_processed(player_file)
 
     def extract_player_details(self, file_name=""):
+        if file_name == "":
+            self.logger.error(f"Function extract_player_details called without a file_name")
         player_data = {}
-        player_data["id"] = file_name.split(self.delimiter)[-1][10:].replace(".htm", "")
+        player_data["id"] = pathlib.Path(file_name).parts[-1][10:].replace(".htm", "")
         info_div = self.soup.find("div", id="info")
         player_data["name"] = info_div.find("h1").text.strip()
         
@@ -116,14 +118,15 @@ class ProFootballRefPlayersParser(BaseParser):
 
         except ValueError as e:
             if str(e) == "No tables found matching pattern 'Combine Measurements'":
-                print(f"No combine measurements for {file_name.split(self.delimiter)[-1]}")
+                self.logger.info(f"No combine measurements for {pathlib.Path(file_name).parts[-1]}")
             else:
                 raise e
 
         self.data.append(player_data)
         
     def save_parsed_data(self):
-        with open(f"{self.parsed_path}{self.delimiter}players.csv", mode="w") as out_file:
+        file_path = self.parsed_path / "players.csv"
+        with file_path.open(mode="w") as out_file:
             csv_writer = csv.DictWriter(out_file, fieldnames=self.fieldnames)
             csv_writer.writeheader()
             for record in self.data:
@@ -135,4 +138,4 @@ if __name__ == "__main__":
     parser = ProFootballRefPlayersParser()
     parser.parse()
     parser.save_parsed_data()
-    print(f"Total run time = {time.perf_counter() - run_start}")
+    parser.logger.info(f"Total run time = {time.perf_counter() - run_start}")
