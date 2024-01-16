@@ -39,5 +39,5 @@ class BaseParser:
             soup = BeautifulSoup(fp, features="lxml")
         return soup
 
-    def move_to_processed(self, file_name):
+    def move_to_processed(self, file_name=""):
         os.rename(file_name, file_name.replace("unprocessed", "processed"))

@@ -16,10 +16,12 @@ class EspnLiveDraftResultsParser(BaseParser):
             parser_path=pathlib.Path(__file__).parent.resolve(),
             glob_string=glob_string
         )
+        self.logger = self.get_logger()
         self.data = []
     
     def parse(self):
         for draft_result_file in self.files:
+            self.logger.info(f"Processing file {draft_result_file}")
             df = pd.read_csv(draft_result_file)
 
             file_date_string = draft_result_file.split("_")[-1].replace(".csv", "")
@@ -40,4 +42,4 @@ if __name__ == "__main__":
     parser = EspnLiveDraftResultsParser()
     parser.parse()
     parser.save_parsed_data()
-    print(f"Total run time = {time.perf_counter() - run_start}")
+    parser.logger.info(f"Total run time = {time.perf_counter() - run_start}")
