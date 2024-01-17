@@ -4,7 +4,7 @@ import pathlib
 import sys
 
 
-project_path = pathlib.Path(__file__).parent.parent.parent.parent.parent.resolve()
+project_path = pathlib.Path(__file__).resolve().parents[4]
 sys.path.append(f"{project_path}/")
 from library.classes.base_crawler import BaseCrawler
 
@@ -12,10 +12,10 @@ from library.classes.base_crawler import BaseCrawler
 class ProFootballRefPlayersCrawler(BaseCrawler):
     def __init__(self, headless=True):
         super().__init__(
-            crawler_path=pathlib.Path(__file__).resolve().parent
+            crawler_path=pathlib.Path(__file__).resolve().parent,
+            headless=headless
         )
         self.logger = self.get_logger()
-        self.driver = self.initialize_driver(headless=headless)
         self.source_url = "https://www.pro-football-reference.com"
         self.db_connection = self.get_postgres_connection(
             db_config={
@@ -95,11 +95,9 @@ class ProFootballRefPlayersCrawler(BaseCrawler):
 
             self.random_sleep()
 
-        self.driver.close()
-
 
 if __name__ == "__main__":
-    crawler = ProFootballRefPlayersCrawler()
-    crawler.crawl()
-    crawler.save_to_datalake()
+    with ProFootballRefPlayersCrawler() as crawler:
+        crawler.crawl()
+        crawler.save_to_datalake()
     

@@ -6,7 +6,7 @@ import csv
 import sys
 
 
-project_path = pathlib.Path(__file__).parent.parent.parent.parent.parent.resolve()
+project_path = pathlib.Path(__file__).resolve().parents[4]
 sys.path.append(f"{project_path}/")
 from library.classes.base_crawler import BaseCrawler
 
@@ -15,9 +15,9 @@ class EspnLiveDraftTrendsCrawler(BaseCrawler):
 
     def __init__(self, headless=True):
         super().__init__(
-            crawler_path=pathlib.Path(__file__).resolve().parent
-        )      
-        self.driver = self.initialize_driver(headless=headless)
+            crawler_path=pathlib.Path(__file__).resolve().parent,
+            headless=headless
+        )
         self.source_url = "https://fantasy.espn.com/football/livedraftresults"
         self.today = datetime.date.today()
 
@@ -37,12 +37,12 @@ class EspnLiveDraftTrendsCrawler(BaseCrawler):
             count += 1
             if count > 10:
                 break
-
+            
+            self.scroll_page_down()
             next_button.click()
             self.random_sleep()
 
         self.data = rankings
-        self.driver.close()
 
     def get_table_stats(self):
         header_dict = {
@@ -101,7 +101,7 @@ class EspnLiveDraftTrendsCrawler(BaseCrawler):
 
 
 if __name__ == "__main__":
-    crawler = EspnLiveDraftTrendsCrawler(headless=False)
-    crawler.crawl()
-    crawler.save_to_datalake()
+    with EspnLiveDraftTrendsCrawler() as crawler:
+        crawler.crawl()
+        crawler.save_to_datalake()
     

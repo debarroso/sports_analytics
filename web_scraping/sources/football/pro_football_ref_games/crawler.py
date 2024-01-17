@@ -13,10 +13,10 @@ class ProFootballRefGamesCrawler(BaseCrawler):
 
     def __init__(self, headless=True):
         super().__init__(
-            crawler_path=pathlib.Path(__file__).resolve().parent
+            crawler_path=pathlib.Path(__file__).resolve().parent,
+            headless=headless
         )
         self.logger = self.get_logger()
-        self.driver = self.initialize_driver(headless=headless)
         self.source_url = "https://www.pro-football-reference.com"
         self.today = datetime.date.today()
     
@@ -43,30 +43,30 @@ class ProFootballRefGamesCrawler(BaseCrawler):
         for link in self.links:
             game_date = self.get_game_date(link)
 
-            if self.today - datetime.timedelta(days=3) >= game_date:
-                file_name = link.split('/')[-1]
-                
-                unprocessed_file_path = self.unprocessed_path / file_name
-                processed_file_path = self.processed_path / file_name
+            if self.today - datetime.timedelta(days=3) < game_date:
+                continue
+            
+            file_name = link.split('/')[-1]
+            
+            unprocessed_file_path = self.unprocessed_path / file_name
+            processed_file_path = self.processed_path / file_name
+            
+            if unprocessed_file_path.is_file():
+                continue
+            elif processed_file_path.is_file():
+                continue
+            
+            self.logger.info(f"Saving {file_name} to datalake")
+            self.random_sleep()
+            self.driver.get(link)
+            
+            with unprocessed_file_path.open(mode='w', encoding='utf-8') as fp:
+                fp.write(self.driver.page_source)
 
-                if unprocessed_file_path.is_file():
-                    continue
-                elif processed_file_path.is_file():
-                    continue
-
-                self.logger.info(f"Saving {file_name} to datalake")
-                self.random_sleep()
-                self.driver.get(link)
-                
-                with unprocessed_file_path.open(mode='w', encoding='utf-8') as fp:
-                    fp.write(self.driver.page_source)
-
-                self.random_sleep()
-
-        self.driver.close()
+            self.random_sleep()
 
 
 if __name__ == "__main__":
-    crawler = ProFootballRefGamesCrawler()
-    crawler.crawl()
-    crawler.save_to_datalake()
+    with ProFootballRefGamesCrawler() as crawler:
+        crawler.crawl()
+        crawler.save_to_datalake()

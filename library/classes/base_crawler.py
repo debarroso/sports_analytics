@@ -3,6 +3,7 @@ from selenium.webdriver.firefox.options import Options
 from selenium.webdriver.firefox.service import Service
 import psycopg2
 import requests
+import platform
 import pathlib
 import logging
 import random
@@ -14,6 +15,7 @@ class BaseCrawler:
     def __init__(
             self,
             crawler_path,
+            headless=True
         ):
         self.base_path = pathlib.Path(__file__).parents[2].resolve()
         self.crawler_path = crawler_path
@@ -26,9 +28,20 @@ class BaseCrawler:
         self.processed_path = self.datalake_path / "processed"
         self.processed_path.mkdir(parents=True, exist_ok=True)
         
+        self.driver = None
+        self.headless = headless
+        self.geckodriver_executable = "geckodriver.exe" if platform.system() == "Windows" else "geckodriver"
         self.web_scraping_tools_path = self.base_path / "web_scraping" / "tools"
-        self.geckodriver_path = self.web_scraping_tools_path / "selenium" / "geckodriver"
+        self.geckodriver_path = self.web_scraping_tools_path / "selenium" / self.geckodriver_executable
         self.driver_logs_path = self.web_scraping_tools_path / "selenium" / "geckodriver.log"
+
+    def __enter__(self):
+        self.driver = self.initialize_driver(headless=self.headless)
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        if self.driver:
+            self.driver.close()
 
     def initialize_driver(self, headless=True):
         firefox_service = Service(
@@ -78,7 +91,7 @@ class BaseCrawler:
                 if time.perf_counter() - start > scroll_duration:
                     break
     
-    def download_source(
+    def download_raw_http_source(
             self,
             url="",
             save_destination=pathlib.Path(__file__).parent,
@@ -86,6 +99,6 @@ class BaseCrawler:
             header={}
         ):
         response = requests.get(url=url, headers=header)
-        print(response.status_code)
+        self.logger.info(f"Response Code {response.status_code} for {url}")
         with save_destination.open(save_destination, mode=write_mode) as f:
             f.write(response.content)
