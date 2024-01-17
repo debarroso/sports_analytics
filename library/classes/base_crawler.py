@@ -77,3 +77,9 @@ class BaseCrawler:
             if scroll_duration > 0:
                 if time.perf_counter() - start > scroll_duration:
                     break
+    
+    def download_source(self, url="", save_destination=pathlib.Path(__file__).parent, header={}):
+        response = requests.get(url=url, headers=header)
+        print(response.status_code)
+        with save_destination.open(save_destination, "wb") as f:
+            f.write(response.content)
