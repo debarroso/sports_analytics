@@ -2,6 +2,7 @@ from selenium import webdriver
 from selenium.webdriver.firefox.options import Options
 from selenium.webdriver.firefox.service import Service
 import psycopg2
+import requests
 import pathlib
 import logging
 import random
@@ -62,3 +63,17 @@ class BaseCrawler:
     
     def get_postgres_connection(self, db_config={}):
         return psycopg2.connect(**db_config)
+
+    def scroll_page_down(self, scroll_duration=0, scroll_length=8):
+        total_height = int(self.driver.execute_script("return document.body.scrollHeight"))
+        scroll_to = 1
+        start = time.perf_counter()
+
+        while total_height > scroll_to:
+            self.driver.execute_script(f"window.scrollTo(0, {scroll_to});")
+            scroll_to += scroll_length
+            total_height = int(self.driver.execute_script("return document.body.scrollHeight"))
+
+            if scroll_duration > 0:
+                if time.perf_counter() - start > scroll_duration:
+                    break
