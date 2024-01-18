@@ -18,7 +18,6 @@ class BaseCrawler:
             crawler_path,
             headless=True,
         ):
-        self.logger = self.get_logger()
         self.base_path = pathlib.Path(__file__).parents[2].resolve()
         self.crawler_path = crawler_path
         self.crawler_name = crawler_path.parts[-1]
@@ -30,6 +29,7 @@ class BaseCrawler:
         self.processed_path = self.datalake_path / "processed"
         self.processed_path.mkdir(parents=True, exist_ok=True)
         
+        self.logger = self.get_logger()
         self.driver = None
         self.headless = headless
         self.geckodriver_executable = "geckodriver.exe" if platform.system() == "Windows" else "geckodriver"
@@ -45,8 +45,7 @@ class BaseCrawler:
         try:
             self.driver.close()
         except NoSuchWindowException as e:
-            self.logger
-
+            self.logger.error(f"Driver window was already closed when exiting class.")
 
     def initialize_driver(self, headless=True):
         firefox_service = Service(

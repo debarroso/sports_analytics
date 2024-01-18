@@ -10,6 +10,7 @@ from library.classes.base_crawler import BaseCrawler
 
 
 class ProFootballRefPlayersCrawler(BaseCrawler):
+    
     def __init__(self, headless=True):
         super().__init__(
             crawler_path=pathlib.Path(__file__).resolve().parent,
