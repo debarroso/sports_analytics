@@ -23,9 +23,9 @@ class ProFootballRefGamesCrawler(BaseCrawler):
         boxscores = []
         for year in range(begin, end):
 
-            self.random_sleep()
             self.driver.get(f"{self.source_url}/years/{year}/games.htm")
             elements = self.driver.find_elements(By.LINK_TEXT, "boxscore")
+            self.random_sleep()
 
             boxscores += [element.get_attribute("href") for element in elements]
 
@@ -66,6 +66,6 @@ class ProFootballRefGamesCrawler(BaseCrawler):
 
 
 if __name__ == "__main__":
-    with ProFootballRefGamesCrawler() as crawler:
+    with ProFootballRefGamesCrawler(headless=False) as crawler:
         crawler.crawl()
         crawler.save_to_datalake()
