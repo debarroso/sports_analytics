@@ -38,7 +38,6 @@ class EspnLiveDraftTrendsCrawler(BaseCrawler):
             if count > 10:
                 break
             
-            self.scroll_page_down()
             next_button.click()
             self.random_sleep()
 
