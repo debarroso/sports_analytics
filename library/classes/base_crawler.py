@@ -1,6 +1,7 @@
-from selenium import webdriver
+from selenium.common.exceptions import NoSuchWindowException
 from selenium.webdriver.firefox.options import Options
 from selenium.webdriver.firefox.service import Service
+from selenium import webdriver
 import psycopg2
 import requests
 import platform
@@ -15,8 +16,9 @@ class BaseCrawler:
     def __init__(
             self,
             crawler_path,
-            headless=True
+            headless=True,
         ):
+        self.logger = self.get_logger()
         self.base_path = pathlib.Path(__file__).parents[2].resolve()
         self.crawler_path = crawler_path
         self.crawler_name = crawler_path.parts[-1]
@@ -40,8 +42,11 @@ class BaseCrawler:
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
-        if self.driver:
+        try:
             self.driver.close()
+        except NoSuchWindowException as e:
+            self.logger
+
 
     def initialize_driver(self, headless=True):
         firefox_service = Service(
@@ -70,8 +75,11 @@ class BaseCrawler:
         sleep_time = random.uniform(*selected_range)
         time.sleep(sleep_time)
 
-    def get_logger(self, format="%(asctime)s - %(levelname)s - %(message)s"):
-        logging.basicConfig(level=logging.INFO, format=format)
+    def get_logger(self):
+        logging.basicConfig(
+            level=logging.INFO,
+            format="%(asctime)s - %(levelname)s - %(message)s"
+        )
         return logging.getLogger(self.crawler_name)
     
     def get_postgres_connection(self, db_config={}):

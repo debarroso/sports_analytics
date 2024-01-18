@@ -16,7 +16,6 @@ class ProFootballRefGamesCrawler(BaseCrawler):
             crawler_path=pathlib.Path(__file__).resolve().parent,
             headless=headless
         )
-        self.logger = self.get_logger()
         self.source_url = "https://www.pro-football-reference.com"
         self.today = datetime.date.today()
     
