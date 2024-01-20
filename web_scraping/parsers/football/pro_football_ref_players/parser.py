@@ -7,7 +7,7 @@ import sys
 import re
 
 
-project_path = pathlib.Path(__file__).parent.parent.parent.parent.parent.resolve()
+project_path = pathlib.Path(__file__).resolve().parents[4]
 sys.path.append(f"{project_path}/")
 from library.classes.base_parser import BaseParser
 
