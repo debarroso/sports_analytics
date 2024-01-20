@@ -66,9 +66,13 @@ class BaseCrawler:
         driver.maximize_window()
         return driver
     
-    def random_sleep(self):
-        ranges = [(3, 7), (7, 11), (11, 20)]
-        weights = [0.3, 0.6, 0.1]
+    def random_sleep(
+            self,
+            ranges=[(3, 7), (7, 11), (11, 20)],
+            weights=[0.3, 0.6, 0.1]
+        ):
+        ranges = ranges
+        weights = weights
 
         selected_range = random.choices(ranges, weights=weights, k=1)[0]
         sleep_time = random.uniform(*selected_range)
