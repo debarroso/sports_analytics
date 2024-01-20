@@ -66,6 +66,6 @@ class ProFootballRefGamesCrawler(BaseCrawler):
 
 
 if __name__ == "__main__":
-    with ProFootballRefGamesCrawler(headless=False) as crawler:
+    with ProFootballRefGamesCrawler() as crawler:
         crawler.crawl()
         crawler.save_to_datalake()
