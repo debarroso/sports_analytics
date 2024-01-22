@@ -105,11 +105,11 @@ class BaseCrawler:
     def download_raw_http_source(
             self,
             url="",
-            save_destination=pathlib.Path(__file__).parent,
+            save_destination=pathlib.Path(__file__).parents[2].resolve(),
             write_mode="w",
             header={}
         ):
         response = requests.get(url=url, headers=header)
-        self.logger.info(f"Response Code {response.status_code} for downloading {url}")
-        with save_destination.open(save_destination, mode=write_mode) as f:
+        self.logger.info(f"Response code {response.status_code} for downloading {url}")
+        with save_destination.open(mode=write_mode) as f:
             f.write(response.content)
