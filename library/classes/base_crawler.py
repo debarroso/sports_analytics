@@ -111,5 +111,5 @@ class BaseCrawler:
         ):
         response = requests.get(url=url, headers=header)
         self.logger.info(f"Response code {response.status_code} for downloading {url}")
-        with save_destination.open(mode=write_mode) as f:
-            f.write(response.content)
+        with save_destination.open(mode=write_mode) as fp:
+            fp.write(response.content)
