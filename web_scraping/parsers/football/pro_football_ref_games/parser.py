@@ -659,5 +659,5 @@ if __name__ == "__main__":
     parser = ProFootballRefGamesParser()
     parser.parse()
     parser.save_parsed_data()
-    parser.logger.info(f"Total run time = {time.perf_counter() - run_start}")
+    parser.logger.info(f"Total processing time: {time.perf_counter() - run_start} sec")
     
