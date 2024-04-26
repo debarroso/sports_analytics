@@ -1,5 +1,4 @@
 import pandas as pd
-import datetime
 import pathlib
 import time
 import sys
@@ -26,7 +25,7 @@ class EspnLiveDraftTrendsParser(BaseParser):
 
             file_date_string = draft_result_file.split("_")[-1].replace(".csv", "")
             date_object = pd.to_datetime(file_date_string).date()
-            df.insert(0, "date", date_object)
+            df.insert(0, "date", str(date_object))
             self.data.append(df)
 
             self.move_to_processed(draft_result_file)

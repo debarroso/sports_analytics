@@ -19,6 +19,8 @@ class ProFootballRefPlayersParser(BaseParser):
             parser_path=pathlib.Path(__file__).parent.resolve(),
             glob_string=glob_string
         )
+        self.soup = None
+        self.soup_str = None
         self.logger = self.get_logger()
         self.fieldnames = [
             "id",
@@ -54,10 +56,11 @@ class ProFootballRefPlayersParser(BaseParser):
     def extract_player_details(self, file_name=""):
         if file_name == "":
             self.logger.error(f"Function extract_player_details called without a file_name")
-        player_data = {}
-        player_data["id"] = pathlib.Path(file_name).parts[-1][10:].replace(".htm", "")
         info_div = self.soup.find("div", id="info")
-        player_data["name"] = info_div.find("h1").text.strip()
+        player_data = {
+            "id": pathlib.Path(file_name).parts[-1][10:].replace(".htm", ""),
+            "name": info_div.find("h1").text.strip()
+        }
         
         player_string = ""
         for p in info_div.find_all("p"):

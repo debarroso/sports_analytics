@@ -4,7 +4,6 @@ import pathlib
 import time
 import sys
 
-
 project_path = pathlib.Path(__file__).resolve().parents[4]
 sys.path.append(f"{project_path}/")
 from library.classes.base_parser import BaseParser
@@ -17,6 +16,9 @@ class ProFootballRefGamesParser(BaseParser):
             parser_path=pathlib.Path(__file__).parent.resolve(),
             glob_string=glob_string
         )
+        self.game_id = None
+        self.soup = None
+        self.soup_str = None
         self.logger = self.get_logger()
         self.data = {
             "game_details": [],
@@ -72,19 +74,25 @@ class ProFootballRefGamesParser(BaseParser):
             self.logger.info(f"Processing {pathlib.Path(game_file).parts[-1]} took {time.perf_counter() - start_time}")
             self.move_to_processed(game_file)
 
-    def clean_header(self, header=[]):
+    @staticmethod
+    def clean_header(header=None):
+        if header is None:
+            header = []
         return [c.replace(' ', '_').strip(".").lower() for c in header]
 
-    def get_game_date(self, game_id=""):
+    @staticmethod
+    def get_game_date(game_id=""):
         return f"{game_id[0:4]}-{game_id[4:6]}-{game_id[6:8]}"
-    
-    def flatten_links(self, cell):
+
+    @staticmethod
+    def flatten_links(cell):
         if cell[1] is None:
             return cell[0]
         else:
             return f"{cell[0]}^{cell[1]}"
 
-    def get_game_result(self, score, opp_score):
+    @staticmethod
+    def get_game_result(score, opp_score):
         score = int(score)
         opp_score = int(opp_score)
 
@@ -101,7 +109,7 @@ class ProFootballRefGamesParser(BaseParser):
 
         game_info_dict = {}
         officials_dict = {}
-        
+
         try:
             game_info = pd.read_html(StringIO(self.soup_str), match="Game Info")
             game_info_keys = game_info[0]["Game Info"].values.tolist()
@@ -109,13 +117,13 @@ class ProFootballRefGamesParser(BaseParser):
             game_info_dict = dict(zip(self.clean_header(game_info_keys), game_info_values))
 
         except ValueError as e:
-            
+
             if "No tables found" in str(e):
                 self.logger.warning(f"no game info table found in {file_name}")
 
             else:
                 raise
-        
+
         try:
             officials = pd.read_html(StringIO(self.soup_str), match="Officials")
             officials_keys = officials[0]["Officials"].values.tolist()
@@ -123,7 +131,7 @@ class ProFootballRefGamesParser(BaseParser):
             officials_dict = dict(zip(self.clean_header(officials_keys), officials_values))
 
         except ValueError as e:
-            
+
             if "No tables found" in str(e):
                 self.logger.info(f"no officials table found in {file_name}")
 
@@ -155,7 +163,7 @@ class ProFootballRefGamesParser(BaseParser):
         away_coach = away_team.find("div", attrs={"class": "datapoint"})
         away_coach_id = away_coach.find_all("a")[0].get("href")
         away_coach_name = away_coach.find_all("a")[0].text.strip()
-        
+
         home_team_meta = home_team.find_all("strong")[0]
         home_team_id = home_team_meta.find_all("a")[0].get("href")
         home_team_name = home_team_meta.text.strip()
@@ -165,11 +173,11 @@ class ProFootballRefGamesParser(BaseParser):
         home_coach_name = home_coach.find_all("a")[0].text.strip()
 
         team_stats = pd.read_html(StringIO(self.soup_str), match="Team Stats")[0]
-        stat_keys = self.clean_header(team_stats.iloc[:,0].values.tolist())
-        away_team_stats = team_stats.iloc[:,1].values.tolist()
+        stat_keys = self.clean_header(team_stats.iloc[:, 0].values.tolist())
+        away_team_stats = team_stats.iloc[:, 1].values.tolist()
         away_team_abbreviation = team_stats.columns.values[1]
         home_team_abbreviation = team_stats.columns.values[2]
-        home_team_stats = team_stats.iloc[:,2].values.tolist()
+        home_team_stats = team_stats.iloc[:, 2].values.tolist()
 
         away_team_dict = {
             "game_id": game_id,
@@ -202,7 +210,7 @@ class ProFootballRefGamesParser(BaseParser):
 
         away_team_dict.update(**away_stats_dict)
         home_team_dict.update(**home_stats_dict)
-        
+
         self.data["team_stats"].append(away_team_dict)
         self.data["team_stats"].append(home_team_dict)
 
@@ -221,10 +229,10 @@ class ProFootballRefGamesParser(BaseParser):
         }
 
         slice_dict = {
-            "passing": [0,1,2,3,4,5,6,7,8,9,10],
-            "rushing": [0,1,11,12,13,14],
-            "receiving": [0,1,15,16,17,18,19],
-            "fumbles": [0,1,20,21],
+            "passing": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+            "rushing": [0, 1, 11, 12, 13, 14],
+            "receiving": [0, 1, 15, 16, 17, 18, 19],
+            "fumbles": [0, 1, 20, 21],
             "defense": [i for i in range(17)],
             "returns": [i for i in range(12)],
             "kicking": [i for i in range(10)]
@@ -568,23 +576,23 @@ class ProFootballRefGamesParser(BaseParser):
             tables = pd.read_html(StringIO(self.soup_str), match=match_dict[stat_type], extract_links="body")
 
         except ValueError as e:
-            
             if "No tables found" in str(e):
                 self.logger.warning(f"{stat_type} table not found in {file_name}")
                 return
 
             else:
                 raise
-        
+
         if stat_type == "defense":
             tables.pop(0)
+
         basic_table = tables[0].iloc[:, slice_dict[stat_type]]
         basic_table.columns = basic_table.columns.map('_'.join).str.strip('_')
         basic_table = basic_table.rename(columns=basic_columns_dict[stat_type])
         basic_table = basic_table.applymap(self.flatten_links)
         for column in basic_columns_to_convert_dict[stat_type]:
             basic_table[column] = basic_table[column].apply(pd.to_numeric, errors="coerce")
-        
+
         if stat_type == "passing":
             condition = basic_table["attempts"] > 0
         elif stat_type == "rushing":
@@ -599,6 +607,8 @@ class ProFootballRefGamesParser(BaseParser):
             condition = basic_table["kick_returns"] >= 0
         elif stat_type == "kicking":
             condition = basic_table["punts"] >= 0
+        else:
+            condition = None
         basic_table = basic_table[condition]
 
         if not basic_table.empty:
@@ -634,7 +644,7 @@ class ProFootballRefGamesParser(BaseParser):
         for table in self.data:
 
             table_path = self.parsed_path / table
-            
+
             if table in ["game_details", "team_stats"]:
                 combined_df = pd.DataFrame(self.data[table])
                 combined_df.to_csv(f"{str(table_path)}.csv", index=False, header=True)
@@ -660,4 +670,3 @@ if __name__ == "__main__":
     parser.parse()
     parser.save_parsed_data()
     parser.logger.info(f"Total processing time: {time.perf_counter() - run_start} sec")
-    
