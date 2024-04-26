@@ -18,6 +18,7 @@ class EspnLiveDraftTrendsCrawler(BaseCrawler):
             crawler_path=pathlib.Path(__file__).resolve().parent,
             headless=headless
         )
+        self.data = None
         self.source_url = "https://fantasy.espn.com/football/livedraftresults"
         self.today = datetime.date.today()
 

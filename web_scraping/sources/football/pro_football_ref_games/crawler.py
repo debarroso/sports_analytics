@@ -16,22 +16,24 @@ class ProFootballRefGamesCrawler(BaseCrawler):
             crawler_path=pathlib.Path(__file__).resolve().parent,
             headless=headless
         )
+        self.links = None
         self.source_url = "https://www.pro-football-reference.com"
         self.today = datetime.date.today()
     
-    def crawl(self, begin=2023, end=2024):
+    def crawl(self, begin=2024, end=2025):
         boxscores = []
         for year in range(begin, end):
 
             self.driver.get(f"{self.source_url}/years/{year}/games.htm")
-            elements = self.driver.find_elements(By.LINK_TEXT, "boxscore")
             self.random_sleep()
 
+            elements = self.driver.find_elements(By.LINK_TEXT, "boxscore")
             boxscores += [element.get_attribute("href") for element in elements]
 
         self.links = boxscores
 
-    def get_game_date(self, link):
+    @staticmethod
+    def get_game_date(link):
         game_id = link.split("/")[-1][:-4]
         year = int(game_id[0:4])
         month = int(game_id[4:6])

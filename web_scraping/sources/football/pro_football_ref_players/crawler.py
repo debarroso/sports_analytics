@@ -16,9 +16,10 @@ class ProFootballRefPlayersCrawler(BaseCrawler):
             crawler_path=pathlib.Path(__file__).resolve().parent,
             headless=headless
         )
+        self.links = None
         self.source_url = "https://www.pro-football-reference.com"
         self.db_connection = self.get_postgres_connection(
-            db_config={
+            **{
                 "dbname": "nfl_statistics",
                 "host": "localhost",  # or your database host
                 "port": 5432  # default port for PostgreSQL
