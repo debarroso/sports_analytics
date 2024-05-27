@@ -19,16 +19,18 @@ def get_leagues():
         leagues = json.loads(fp.read())
     return leagues
 
+
 def get_league_seasons(league):
     print(league)
     driver.get(f"{league['link']}")
 
     WebDriverWait(driver, 5).until(EC.presence_of_element_located((By.ID, "seasons")))
     seasons_table = driver.find_element_by_id("seasons")
-    
+
     html = seasons_table.get_attribute("outHTML")
 
     print(html)
+
 
 leagues = get_leagues()
 get_league_seasons(league=leagues["Premier_League"])

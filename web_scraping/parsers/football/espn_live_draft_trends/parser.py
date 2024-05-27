@@ -12,12 +12,11 @@ from library.classes.base_parser import BaseParser
 class EspnLiveDraftTrendsParser(BaseParser):
     def __init__(self, glob_string="*"):
         super().__init__(
-            parser_path=pathlib.Path(__file__).parent.resolve(),
-            glob_string=glob_string
+            parser_path=pathlib.Path(__file__).parent.resolve(), glob_string=glob_string
         )
         self.logger = self.get_logger()
         self.data = []
-    
+
     def parse(self):
         for draft_result_file in self.files:
             self.logger.info(f"Processing file {draft_result_file}")

@@ -13,13 +13,12 @@ class ProFootballRefGamesCrawler(BaseCrawler):
 
     def __init__(self, headless=True):
         super().__init__(
-            crawler_path=pathlib.Path(__file__).resolve().parent,
-            headless=headless
+            crawler_path=pathlib.Path(__file__).resolve().parent, headless=headless
         )
         self.links = None
         self.source_url = "https://www.pro-football-reference.com"
         self.today = datetime.date.today()
-    
+
     def crawl(self, begin=2024, end=2025):
         boxscores = []
         for year in range(begin, end):
@@ -46,22 +45,22 @@ class ProFootballRefGamesCrawler(BaseCrawler):
 
             if self.today - datetime.timedelta(days=3) < game_date:
                 continue
-            
-            file_name = link.split('/')[-1]
-            
+
+            file_name = link.split("/")[-1]
+
             unprocessed_file_path = self.unprocessed_path / file_name
             processed_file_path = self.processed_path / file_name
-            
+
             if unprocessed_file_path.is_file():
                 continue
             elif processed_file_path.is_file():
                 continue
-            
+
             self.logger.info(f"Saving {file_name} to datalake")
             self.random_sleep()
             self.driver.get(link)
-            
-            with unprocessed_file_path.open(mode='w', encoding='utf-8') as fp:
+
+            with unprocessed_file_path.open(mode="w", encoding="utf-8") as fp:
                 fp.write(self.driver.page_source)
 
             self.random_sleep()

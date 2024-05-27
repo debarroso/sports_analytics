@@ -22,7 +22,9 @@ class BaseCrawler:
         self.web_scraping_tools_path = self.base_path / "web_scraping" / "tools"
         self.crawler_path = crawler_path
         self.crawler_name = crawler_path.parts[-1]
-        self.datalake_path = pathlib.Path(str(self.crawler_path).replace('web_scraping', 'datalake'))
+        self.datalake_path = pathlib.Path(
+            str(self.crawler_path).replace("web_scraping", "datalake")
+        )
 
         self.logger = self.get_logger()
         self.headless = headless
@@ -33,9 +35,15 @@ class BaseCrawler:
         self.processed_path = self.datalake_path / "processed"
         self.processed_path.mkdir(parents=True, exist_ok=True)
 
-        self.geckodriver_executable = "geckodriver.exe" if platform.system() == "Windows" else "geckodriver"
-        self.geckodriver_path = self.web_scraping_tools_path / "selenium" / self.geckodriver_executable
-        self.driver_logs_path = self.web_scraping_tools_path / "selenium" / "geckodriver.log"
+        self.geckodriver_executable = (
+            "geckodriver.exe" if platform.system() == "Windows" else "geckodriver"
+        )
+        self.geckodriver_path = (
+            self.web_scraping_tools_path / "selenium" / self.geckodriver_executable
+        )
+        self.driver_logs_path = (
+            self.web_scraping_tools_path / "selenium" / "geckodriver.log"
+        )
 
     def __enter__(self):
         self.driver = self.initialize_driver(headless=self.headless)
@@ -49,15 +57,14 @@ class BaseCrawler:
 
     def get_logger(self):
         logging.basicConfig(
-            level=logging.INFO,
-            format="%(asctime)s - %(levelname)s - %(message)s"
+            level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
         )
         return logging.getLogger(self.crawler_name)
 
     def initialize_driver(self, headless=True):
         firefox_service = Service(
             executable_path=str(self.geckodriver_path),
-            log_path=str(self.driver_logs_path)
+            log_path=str(self.driver_logs_path),
         )
 
         firefox_options = Options()
@@ -74,16 +81,17 @@ class BaseCrawler:
             firefox_options.set_preference("general.useragent.override", user_agent)
 
         driver = webdriver.Firefox(options=firefox_options, service=firefox_service)
-        driver.install_addon(str(self.web_scraping_tools_path / "selenium" / "extensions" / "uBlock0.xpi"))
-        
+        driver.install_addon(
+            str(
+                self.web_scraping_tools_path / "selenium" / "extensions" / "uBlock0.xpi"
+            )
+        )
+
         driver.maximize_window()
         return driver
 
     @staticmethod
-    def random_sleep(
-        ranges=None,
-        weights=None
-    ):
+    def random_sleep(ranges=None, weights=None):
         if weights is None:
             weights = [0.3, 0.6, 0.1]
 
@@ -99,24 +107,28 @@ class BaseCrawler:
         return psycopg2.connect(**kwargs)
 
     def scroll_page_down(self, scroll_duration=0, scroll_length=8):
-        total_height = int(self.driver.execute_script("return document.body.scrollHeight"))
+        total_height = int(
+            self.driver.execute_script("return document.body.scrollHeight")
+        )
         scroll_to = 1
         start = time.perf_counter()
 
         while total_height > scroll_to:
             self.driver.execute_script(f"window.scrollTo(0, {scroll_to});")
             scroll_to += scroll_length
-            total_height = int(self.driver.execute_script("return document.body.scrollHeight"))
+            total_height = int(
+                self.driver.execute_script("return document.body.scrollHeight")
+            )
 
             if scroll_duration > 0:
                 if time.perf_counter() - start > scroll_duration:
                     break
-    
+
     def download_raw_http_source(
         self,
         url="",
         save_destination=pathlib.Path(__file__).parents[2].resolve(),
-        header=None
+        header=None,
     ):
         if header is None:
             header = {}

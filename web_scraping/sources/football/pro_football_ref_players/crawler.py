@@ -10,11 +10,10 @@ from library.classes.base_crawler import BaseCrawler
 
 
 class ProFootballRefPlayersCrawler(BaseCrawler):
-    
+
     def __init__(self, headless=True):
         super().__init__(
-            crawler_path=pathlib.Path(__file__).resolve().parent,
-            headless=headless
+            crawler_path=pathlib.Path(__file__).resolve().parent, headless=headless
         )
         self.links = None
         self.source_url = "https://www.pro-football-reference.com"
@@ -22,10 +21,10 @@ class ProFootballRefPlayersCrawler(BaseCrawler):
             **{
                 "dbname": "nfl_statistics",
                 "host": "localhost",  # or your database host
-                "port": 5432  # default port for PostgreSQL
+                "port": 5432,  # default port for PostgreSQL
             }
         )
-    
+
     def crawl(self):
         # get cursor for db
         cursor = self.db_connection.cursor()
@@ -68,7 +67,7 @@ class ProFootballRefPlayersCrawler(BaseCrawler):
 
             unprocessed_file_path = self.unprocessed_path / file_name
             processed_file_path = self.processed_path / file_name
-            
+
             if unprocessed_file_path.is_file():
                 continue
             elif processed_file_path.is_file():
@@ -91,7 +90,7 @@ class ProFootballRefPlayersCrawler(BaseCrawler):
             except NoSuchElementException:
                 self.logger.info(f"No transactions link on page: {link}")
 
-            with unprocessed_file_path.open(mode='w', encoding='utf-8') as fp:
+            with unprocessed_file_path.open(mode="w", encoding="utf-8") as fp:
                 fp.write(self.driver.page_source)
 
             self.random_sleep()
@@ -101,4 +100,3 @@ if __name__ == "__main__":
     with ProFootballRefPlayersCrawler() as crawler:
         crawler.crawl()
         crawler.save_to_datalake()
-    

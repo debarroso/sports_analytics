@@ -13,8 +13,7 @@ class ProFootballRefGamesParser(BaseParser):
 
     def __init__(self, glob_string="*"):
         super().__init__(
-            parser_path=pathlib.Path(__file__).parent.resolve(),
-            glob_string=glob_string
+            parser_path=pathlib.Path(__file__).parent.resolve(), glob_string=glob_string
         )
         self.game_id = None
         self.soup = None
@@ -23,31 +22,13 @@ class ProFootballRefGamesParser(BaseParser):
         self.data = {
             "game_details": [],
             "team_stats": [],
-            "passing_stats": {
-                "basic": [],
-                "advanced": []
-            },
-            "rushing_stats": {
-                "basic": [],
-                "advanced": []
-            },
-            "receiving_stats": {
-                "basic": [],
-                "advanced": []
-            },
-            "fumble_stats": {
-                "basic": []
-            },
-            "defense_stats": {
-                "basic": [],
-                "advanced": []
-            },
-            "return_stats": {
-                "basic": []
-            },
-            "kicking_stats": {
-                "basic": []
-            }
+            "passing_stats": {"basic": [], "advanced": []},
+            "rushing_stats": {"basic": [], "advanced": []},
+            "receiving_stats": {"basic": [], "advanced": []},
+            "fumble_stats": {"basic": []},
+            "defense_stats": {"basic": [], "advanced": []},
+            "return_stats": {"basic": []},
+            "kicking_stats": {"basic": []},
         }
 
     def parse(self):
@@ -58,7 +39,7 @@ class ProFootballRefGamesParser(BaseParser):
             "fumbles",
             "defense",
             "returns",
-            "kicking"
+            "kicking",
         ]
 
         for game_file in self.files:
@@ -71,14 +52,16 @@ class ProFootballRefGamesParser(BaseParser):
             for stat_type in stat_types:
                 self.extract_numeric_stats(stat_type=stat_type, file_name=game_file)
 
-            self.logger.info(f"Processing {pathlib.Path(game_file).parts[-1]} took {time.perf_counter() - start_time}")
+            self.logger.info(
+                f"Processing {pathlib.Path(game_file).parts[-1]} took {time.perf_counter() - start_time}"
+            )
             self.move_to_processed(game_file)
 
     @staticmethod
     def clean_header(header=None):
         if header is None:
             header = []
-        return [c.replace(' ', '_').strip(".").lower() for c in header]
+        return [c.replace(" ", "_").strip(".").lower() for c in header]
 
     @staticmethod
     def get_game_date(game_id=""):
@@ -114,7 +97,9 @@ class ProFootballRefGamesParser(BaseParser):
             game_info = pd.read_html(StringIO(self.soup_str), match="Game Info")
             game_info_keys = game_info[0]["Game Info"].values.tolist()
             game_info_values = game_info[0]["Game Info.1"].values.tolist()
-            game_info_dict = dict(zip(self.clean_header(game_info_keys), game_info_values))
+            game_info_dict = dict(
+                zip(self.clean_header(game_info_keys), game_info_values)
+            )
 
         except ValueError as e:
 
@@ -128,7 +113,9 @@ class ProFootballRefGamesParser(BaseParser):
             officials = pd.read_html(StringIO(self.soup_str), match="Officials")
             officials_keys = officials[0]["Officials"].values.tolist()
             officials_values = officials[0]["Officials.1"].values.tolist()
-            officials_dict = dict(zip(self.clean_header(officials_keys), officials_values))
+            officials_dict = dict(
+                zip(self.clean_header(officials_keys), officials_values)
+            )
 
         except ValueError as e:
 
@@ -139,11 +126,16 @@ class ProFootballRefGamesParser(BaseParser):
                 raise
 
         meta_box = self.soup.find("div", attrs={"class": "scorebox_meta"})
+        game_time = ""
         for element in meta_box.find_all("div"):
             if "Start Time" in element.text:
                 game_time = element.text.replace("Start Time: ", "")
 
-        game_details = {"game_id": game_id, "game_date": game_date, "game_time": game_time}
+        game_details = {
+            "game_id": game_id,
+            "game_date": game_date,
+            "game_time": game_time,
+        }
         game_details.update({**game_info_dict, **officials_dict})
 
         self.data["game_details"].append(game_details)
@@ -189,7 +181,7 @@ class ProFootballRefGamesParser(BaseParser):
             "coach_id": away_coach_id,
             "coach_name": away_coach_name,
             "home": False,
-            "result": self.get_game_result(away_team_score, home_team_score)
+            "result": self.get_game_result(away_team_score, home_team_score),
         }
 
         home_team_dict = {
@@ -202,7 +194,7 @@ class ProFootballRefGamesParser(BaseParser):
             "coach_id": home_coach_id,
             "coach_name": home_coach_name,
             "home": True,
-            "result": self.get_game_result(home_team_score, away_team_score)
+            "result": self.get_game_result(home_team_score, away_team_score),
         }
 
         away_stats_dict = dict(zip(stat_keys, away_team_stats))
@@ -225,7 +217,7 @@ class ProFootballRefGamesParser(BaseParser):
             "fumbles": "Passing, Rushing, & Receiving",
             "defense": "Defense",
             "returns": "Kick/Punt Returns",
-            "kicking": "Kicking & Punting"
+            "kicking": "Kicking & Punting",
         }
 
         slice_dict = {
@@ -235,7 +227,7 @@ class ProFootballRefGamesParser(BaseParser):
             "fumbles": [0, 1, 20, 21],
             "defense": [i for i in range(17)],
             "returns": [i for i in range(12)],
-            "kicking": [i for i in range(10)]
+            "kicking": [i for i in range(10)],
         }
 
         basic_columns_dict = {
@@ -250,7 +242,7 @@ class ProFootballRefGamesParser(BaseParser):
                 "Passing_Sk": "sacked",
                 "Passing_Yds.1": "sacked_yards",
                 "Passing_Lng": "longest_completion",
-                "Passing_Rate": "passer_rating"
+                "Passing_Rate": "passer_rating",
             },
             "rushing": {
                 "Unnamed: 0_level_0_Player": "player",
@@ -273,7 +265,7 @@ class ProFootballRefGamesParser(BaseParser):
                 "Unnamed: 0_level_0_Player": "player",
                 "Unnamed: 1_level_0_Tm": "team",
                 "Fumbles_Fmb": "fumbles",
-                "Fumbles_FL": "fumbles_lost"
+                "Fumbles_FL": "fumbles_lost",
             },
             "defense": {
                 "Unnamed: 0_level_0_Player": "player",
@@ -292,7 +284,7 @@ class ProFootballRefGamesParser(BaseParser):
                 "Fumbles_FR": "fumbles_recovered",
                 "Fumbles_Yds": "fumble_return_yards",
                 "Fumbles_TD": "fumble_rec_touchdown",
-                "Fumbles_FF": "forced_fumbles"
+                "Fumbles_FF": "forced_fumbles",
             },
             "returns": {
                 "Unnamed: 0_level_0_Player": "player",
@@ -306,7 +298,7 @@ class ProFootballRefGamesParser(BaseParser):
                 "Punt Returns_Yds": "punt_return_yards",
                 "Punt Returns_Y/R": "yards_per_punt_return",
                 "Punt Returns_TD": "punt_return_touchdowns",
-                "Punt Returns_Lng": "longest_punt_return"
+                "Punt Returns_Lng": "longest_punt_return",
             },
             "kicking": {
                 "Unnamed: 0_level_0_Player": "player",
@@ -318,8 +310,8 @@ class ProFootballRefGamesParser(BaseParser):
                 "Punting_Pnt": "punts",
                 "Punting_Yds": "punt_yards",
                 "Punting_Y/P": "yards_per_punt",
-                "Punting_Lng": "longest_punt"
-            }
+                "Punting_Lng": "longest_punt",
+            },
         }
 
         advanced_columns_dict = {
@@ -349,7 +341,7 @@ class ProFootballRefGamesParser(BaseParser):
                 "Prss": "times_pressured",
                 "Prss%": "percent_pressured_per_dropback",
                 "Scrm": "scrambles",
-                "Yds/Scr": "yards_per_scramble"
+                "Yds/Scr": "yards_per_scramble",
             },
             "rushing": {
                 "Player": "player",
@@ -383,7 +375,7 @@ class ProFootballRefGamesParser(BaseParser):
                 "Drop": "drops",
                 "Drop%": "drop_percentage",
                 "Int": "interceptions_when_targeted",
-                "Rat": "qb_rating_when_targeted"
+                "Rat": "qb_rating_when_targeted",
             },
             "defense": {
                 "Player": "player",
@@ -407,8 +399,8 @@ class ProFootballRefGamesParser(BaseParser):
                 "Prss": "pressures",
                 "Comb": "combined_tackles",
                 "MTkl": "missed_tackles",
-                "MTkl%": "missed_tackle_percentage"
-            }
+                "MTkl%": "missed_tackle_percentage",
+            },
         }
 
         basic_columns_to_convert_dict = {
@@ -421,25 +413,17 @@ class ProFootballRefGamesParser(BaseParser):
                 "sacked",
                 "sacked_yards",
                 "longest_completion",
-                "passer_rating"
+                "passer_rating",
             ],
-            "rushing": [
-                "attempts",
-                "yards",
-                "touchdowns",
-                "longest_rush"
-            ],
+            "rushing": ["attempts", "yards", "touchdowns", "longest_rush"],
             "receiving": [
                 "targets",
                 "receptions",
                 "yards",
                 "touchdowns",
-                "longest_reception"
+                "longest_reception",
             ],
-            "fumbles": [
-                "fumbles",
-                "fumbles_lost"
-            ],
+            "fumbles": ["fumbles", "fumbles_lost"],
             "defense": [
                 "interceptions",
                 "interception_return_yards",
@@ -455,7 +439,7 @@ class ProFootballRefGamesParser(BaseParser):
                 "fumbles_recovered",
                 "fumble_return_yards",
                 "fumble_rec_touchdown",
-                "forced_fumbles"
+                "forced_fumbles",
             ],
             "returns": [
                 "kick_returns",
@@ -467,7 +451,7 @@ class ProFootballRefGamesParser(BaseParser):
                 "punt_return_yards",
                 "yards_per_punt_return",
                 "punt_return_touchdowns",
-                "longest_punt_return"
+                "longest_punt_return",
             ],
             "kicking": [
                 "extra_points_made",
@@ -477,8 +461,8 @@ class ProFootballRefGamesParser(BaseParser):
                 "punts",
                 "punt_yards",
                 "yards_per_punt",
-                "longest_punt"
-            ]
+                "longest_punt",
+            ],
         }
 
         advanced_columns_to_convert_dict = {
@@ -506,7 +490,7 @@ class ProFootballRefGamesParser(BaseParser):
                 "times_pressured",
                 "percent_pressured_per_dropback",
                 "scrambles",
-                "yards_per_scramble"
+                "yards_per_scramble",
             ],
             "rushing": [
                 "attempts",
@@ -518,7 +502,7 @@ class ProFootballRefGamesParser(BaseParser):
                 "yards_after_contact",
                 "yards_after_contact_per_attempt",
                 "broken_tackles",
-                "attempts_per_broken_tackle"
+                "attempts_per_broken_tackle",
             ],
             "receiving": [
                 "targets",
@@ -536,7 +520,7 @@ class ProFootballRefGamesParser(BaseParser):
                 "drops",
                 "drop_percentage",
                 "interceptions_when_targeted",
-                "qb_rating_when_targeted"
+                "qb_rating_when_targeted",
             ],
             "defense": [
                 "interceptions",
@@ -558,8 +542,8 @@ class ProFootballRefGamesParser(BaseParser):
                 "pressures",
                 "combined_tackles",
                 "missed_tackles",
-                "missed_tackle_percentage"
-            ]
+                "missed_tackle_percentage",
+            ],
         }
 
         table_keys = {
@@ -569,11 +553,15 @@ class ProFootballRefGamesParser(BaseParser):
             "fumbles": "fumble_stats",
             "defense": "defense_stats",
             "returns": "return_stats",
-            "kicking": "kicking_stats"
+            "kicking": "kicking_stats",
         }
 
         try:
-            tables = pd.read_html(StringIO(self.soup_str), match=match_dict[stat_type], extract_links="body")
+            tables = pd.read_html(
+                StringIO(self.soup_str),
+                match=match_dict[stat_type],
+                extract_links="body",
+            )
 
         except ValueError as e:
             if "No tables found" in str(e):
@@ -587,11 +575,13 @@ class ProFootballRefGamesParser(BaseParser):
             tables.pop(0)
 
         basic_table = tables[0].iloc[:, slice_dict[stat_type]]
-        basic_table.columns = basic_table.columns.map('_'.join).str.strip('_')
+        basic_table.columns = basic_table.columns.map("_".join).str.strip("_")
         basic_table = basic_table.rename(columns=basic_columns_dict[stat_type])
         basic_table = basic_table.applymap(self.flatten_links)
         for column in basic_columns_to_convert_dict[stat_type]:
-            basic_table[column] = basic_table[column].apply(pd.to_numeric, errors="coerce")
+            basic_table[column] = basic_table[column].apply(
+                pd.to_numeric, errors="coerce"
+            )
 
         if stat_type == "passing":
             condition = basic_table["attempts"] > 0
@@ -612,8 +602,8 @@ class ProFootballRefGamesParser(BaseParser):
         basic_table = basic_table[condition]
 
         if not basic_table.empty:
-            basic_table.insert(0, 'game_date', game_date)
-            basic_table.insert(0, 'game_id', game_id)
+            basic_table.insert(0, "game_date", game_date)
+            basic_table.insert(0, "game_id", game_id)
             self.data[table_keys[stat_type]]["basic"].append(basic_table)
 
         if len(tables) == 1:
@@ -623,7 +613,9 @@ class ProFootballRefGamesParser(BaseParser):
         advanced_table = advanced_table.rename(columns=advanced_columns_dict[stat_type])
 
         for column in advanced_columns_to_convert_dict[stat_type]:
-            advanced_table[column] = advanced_table[column].apply(pd.to_numeric, errors="coerce")
+            advanced_table[column] = advanced_table[column].apply(
+                pd.to_numeric, errors="coerce"
+            )
 
         if stat_type == "passing":
             condition = advanced_table["attempts"] > 0
@@ -636,8 +628,8 @@ class ProFootballRefGamesParser(BaseParser):
         advanced_table = advanced_table[condition]
 
         if not advanced_table.empty:
-            advanced_table.insert(0, 'game_date', game_date)
-            advanced_table.insert(0, 'game_id', game_id)
+            advanced_table.insert(0, "game_date", game_date)
+            advanced_table.insert(0, "game_id", game_id)
             self.data[table_keys[stat_type]]["advanced"].append(advanced_table)
 
     def save_parsed_data(self):
@@ -651,17 +643,29 @@ class ProFootballRefGamesParser(BaseParser):
 
             elif len(self.data[table]) == 1:
                 if len(self.data[table]["basic"]) > 0:
-                    combined_df = pd.concat(self.data[table]["basic"], ignore_index=True)
-                    combined_df.to_csv(f"{str(table_path)}.csv", index=False, header=True)
+                    combined_df = pd.concat(
+                        self.data[table]["basic"], ignore_index=True
+                    )
+                    combined_df.to_csv(
+                        f"{str(table_path)}.csv", index=False, header=True
+                    )
 
             else:
                 if len(self.data[table]["basic"]) > 0:
-                    combined_df = pd.concat(self.data[table]["basic"], ignore_index=True)
-                    combined_df.to_csv(f"{str(table_path)}_basic.csv", index=False, header=True)
+                    combined_df = pd.concat(
+                        self.data[table]["basic"], ignore_index=True
+                    )
+                    combined_df.to_csv(
+                        f"{str(table_path)}_basic.csv", index=False, header=True
+                    )
 
                 if len(self.data[table]["advanced"]) > 0:
-                    combined_df = pd.concat(self.data[table]["advanced"], ignore_index=True)
-                    combined_df.to_csv(f"{str(table_path)}_advanced.csv", index=False, header=True)
+                    combined_df = pd.concat(
+                        self.data[table]["advanced"], ignore_index=True
+                    )
+                    combined_df.to_csv(
+                        f"{str(table_path)}_advanced.csv", index=False, header=True
+                    )
 
 
 if __name__ == "__main__":

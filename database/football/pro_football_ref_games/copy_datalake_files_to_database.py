@@ -10,10 +10,16 @@ from library.classes.base_database_handler import BaseDatabaseHandler
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(description="Copies files from a directory to postgres")
+    parser = argparse.ArgumentParser(
+        description="Copies files from a directory to postgres"
+    )
 
-    parser.add_argument("--datalake_path", type=str, required=True, help="Path to datalake files")
-    parser.add_argument("--dbname", type=str, required=True, help="Name of the database")
+    parser.add_argument(
+        "--datalake_path", type=str, required=True, help="Path to datalake files"
+    )
+    parser.add_argument(
+        "--dbname", type=str, required=True, help="Name of the database"
+    )
     parser.add_argument("--host", type=str, required=True, help="Database host")
     parser.add_argument("--port", type=int, required=True, help="Database port")
     parser.add_argument("--schema", type=str, required=True, help="Database schema")
@@ -25,14 +31,11 @@ def parse_args():
 
 class CopyDatalakeFilesToDatabase(BaseDatabaseHandler):
 
-    def __init__(self, dbname, host, port):
-        super().__init__(
-            datalake_path="",
-            db_config={}
-        )
+    def __init__(self):
+        super().__init__(datalake_path="", db_config={})
 
     def copy_csv_to_postgres(self, csv_file, cursor):
-        with open(csv_file, "r") as fp:
+        with open(csv_file) as fp:
             reader = csv.DictReader(fp)
             columns = [f"'{column}'" for column in reader.fieldnames]
             fp.seek(0)
