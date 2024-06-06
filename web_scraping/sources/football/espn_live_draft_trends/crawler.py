@@ -39,7 +39,7 @@ class EspnLiveDraftTrendsCrawler(BaseCrawler):
                 break
 
             next_button.click()
-            self.random_sleep()
+            self.random_sleep(ranges=[(5, 7), (7, 11), (11, 20)])
 
         self.data = rankings
 
