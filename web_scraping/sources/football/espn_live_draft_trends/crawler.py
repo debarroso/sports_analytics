@@ -100,6 +100,6 @@ class EspnLiveDraftTrendsCrawler(BaseCrawler):
 
 
 if __name__ == "__main__":
-    with EspnLiveDraftTrendsCrawler(headless=False) as crawler:
+    with EspnLiveDraftTrendsCrawler() as crawler:
         crawler.crawl()
         crawler.save_to_datalake()
