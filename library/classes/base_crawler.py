@@ -44,9 +44,9 @@ class BaseCrawler:
         self.driver_logs_path = (
             self.web_scraping_tools_path / "selenium" / "geckodriver.log"
         )
+        self.driver = self.initialize_driver(headless=self.headless)
 
     def __enter__(self):
-        self.driver = self.initialize_driver(headless=self.headless)
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
