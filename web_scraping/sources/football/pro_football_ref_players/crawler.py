@@ -2,13 +2,16 @@ from library.classes.base_crawler import BaseCrawler
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.by import By
 import pathlib
+import datetime
 
 
 class ProFootballRefPlayersCrawler(BaseCrawler):
 
     def __init__(self, headless=True):
         super().__init__(
-            crawler_path=pathlib.Path(__file__).resolve().parent, headless=headless
+            crawler_path=pathlib.Path(__file__).resolve().parent,
+            crawler_class=self.__class__.__name__,
+            headless=headless,
         )
         self.links = None
         self.source_url = "https://www.pro-football-reference.com"
@@ -21,6 +24,7 @@ class ProFootballRefPlayersCrawler(BaseCrawler):
         )
 
     def crawl(self):
+        self.logger.info(f"Querying postgres for unique players")
         # get cursor for db
         cursor = self.db_connection.cursor()
 
@@ -68,8 +72,7 @@ class ProFootballRefPlayersCrawler(BaseCrawler):
             elif processed_file_path.is_file():
                 continue
 
-            self.logger.info(f"Processing file: {file_name}")
-
+            self.logger.info(f"Getting player page at: {self.source_url}{link}")
             self.random_sleep()
             self.driver.get(f"{self.source_url}{link}")
 
@@ -77,14 +80,15 @@ class ProFootballRefPlayersCrawler(BaseCrawler):
                 element = self.driver.find_element(by=By.ID, value="meta_more_button")
                 self.driver.execute_script("arguments[0].click();", element)
             except NoSuchElementException:
-                self.logger.info(f"No meta button on page: {link}")
+                self.logger.warning(f"No meta button on page: {link}")
 
             try:
                 element = self.driver.find_element(By.ID, "transactions_toggler")
                 self.driver.execute_script("arguments[0].click();", element)
             except NoSuchElementException:
-                self.logger.info(f"No transactions link on page: {link}")
+                self.logger.warning(f"No transactions link on page: {link}")
 
+            self.logger.info(f"Processing file: {file_name}")
             with unprocessed_file_path.open(mode="w", encoding="utf-8") as fp:
                 fp.write(self.driver.page_source)
 

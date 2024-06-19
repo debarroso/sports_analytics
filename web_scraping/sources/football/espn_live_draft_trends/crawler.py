@@ -10,13 +10,16 @@ class EspnLiveDraftTrendsCrawler(BaseCrawler):
 
     def __init__(self, headless=True):
         super().__init__(
-            crawler_path=pathlib.Path(__file__).resolve().parent, headless=headless
+            crawler_path=pathlib.Path(__file__).resolve().parent,
+            crawler_class=self.__class__.__name__,
+            headless=headless,
         )
         self.data = None
         self.source_url = "https://fantasy.espn.com/football/livedraftresults"
         self.today = datetime.date.today()
 
     def crawl(self):
+        self.logger.info(f"Crawling source: {self.source_url}")
         self.driver.get(self.source_url)
         time.sleep(10)
 
@@ -27,6 +30,7 @@ class EspnLiveDraftTrendsCrawler(BaseCrawler):
         rankings = []
         count = 1
         while next_button.is_enabled():
+            self.logger.debug(f"Scraping data from page {count}")
             rankings += self.get_table_stats()
 
             count += 1
@@ -69,6 +73,7 @@ class EspnLiveDraftTrendsCrawler(BaseCrawler):
         file_name = f"espn_live_draft_trends_{self.today}.csv"
         file_path = self.unprocessed_path / file_name
 
+        self.logger.info(f"Saving data to {file_path}")
         with file_path.open(mode="w", encoding="utf-8", newline="") as fp:
             fieldnames = [
                 "rank",
@@ -95,6 +100,6 @@ class EspnLiveDraftTrendsCrawler(BaseCrawler):
 
 
 if __name__ == "__main__":
-    with EspnLiveDraftTrendsCrawler() as crawler:
+    with EspnLiveDraftTrendsCrawler(headless=False) as crawler:
         crawler.crawl()
         crawler.save_to_datalake()

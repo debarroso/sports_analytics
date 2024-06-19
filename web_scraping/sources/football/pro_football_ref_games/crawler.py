@@ -8,7 +8,9 @@ class ProFootballRefGamesCrawler(BaseCrawler):
 
     def __init__(self, headless=True):
         super().__init__(
-            crawler_path=pathlib.Path(__file__).resolve().parent, headless=headless
+            crawler_path=pathlib.Path(__file__).resolve().parent,
+            crawler_class=self.__class__.__name__,
+            headless=headless,
         )
         self.links = None
         self.source_url = "https://www.pro-football-reference.com"
@@ -18,6 +20,9 @@ class ProFootballRefGamesCrawler(BaseCrawler):
         boxscores = []
         for year in range(begin, end):
 
+            self.logger.info(
+                f"Crawling links from source: {self.source_url}/years/{year}/games.htm"
+            )
             self.driver.get(f"{self.source_url}/years/{year}/games.htm")
             self.random_sleep()
 
@@ -51,9 +56,10 @@ class ProFootballRefGamesCrawler(BaseCrawler):
             elif processed_file_path.is_file():
                 continue
 
-            self.logger.info(f"Saving {file_name} to datalake")
+            self.logger.info(f"Getting game source for: {link}")
             self.random_sleep()
             self.driver.get(link)
+            self.logger.info(f"Saving {file_name} to datalake")
 
             with unprocessed_file_path.open(mode="w", encoding="utf-8") as fp:
                 fp.write(self.driver.page_source)

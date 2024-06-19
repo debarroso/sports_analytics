@@ -2,6 +2,7 @@ from selenium.common.exceptions import NoSuchWindowException
 from selenium.webdriver.firefox.options import Options
 from selenium.webdriver.firefox.service import Service
 from selenium import webdriver
+import datetime
 import psycopg2
 import requests
 import platform
@@ -16,18 +17,24 @@ class BaseCrawler:
     def __init__(
         self,
         crawler_path,
+        crawler_class,
         headless=True,
     ):
         self.base_path = pathlib.Path(__file__).parents[2].resolve()
         self.web_scraping_tools_path = self.base_path / "web_scraping" / "tools"
         self.crawler_path = crawler_path
         self.crawler_name = crawler_path.parts[-1]
+        self.crawler_class = crawler_class
         self.datalake_path = pathlib.Path(
             str(self.crawler_path).replace("web_scraping", "datalake")
         )
 
         self.logger = self.get_logger()
         self.headless = headless
+
+        self.logger.info(
+            f"---------- Beginning run of {self.crawler_class} at {datetime.datetime.now()} ----------"
+        )
 
         self.unprocessed_path = self.datalake_path / "unprocessed"
         self.unprocessed_path.mkdir(parents=True, exist_ok=True)
@@ -71,6 +78,7 @@ class BaseCrawler:
         return logger
 
     def initialize_driver(self, headless=True):
+        self.logger.info("Initializing selenium webdriver")
         firefox_service = Service(
             executable_path=str(self.geckodriver_path),
             log_path=str(self.driver_logs_path),
