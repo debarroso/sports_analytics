@@ -3,8 +3,8 @@ from selenium.webdriver.firefox.options import Options
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
-import pandas as pd
-import time, os, json, pathlib
+import json
+import pathlib
 
 
 current_path = pathlib.Path(__file__).parent.resolve()
