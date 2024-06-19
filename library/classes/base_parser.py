@@ -25,9 +25,20 @@ class BaseParser:
             exit()
         self.data = []
 
-    def get_logger(self, logger_format="%(asctime)s - %(levelname)s - %(message)s"):
-        logging.basicConfig(level=logging.INFO, format=logger_format)
-        return logging.getLogger(self.parser_name)
+    def get_logger(self):
+        logger = logging.getLogger(self.parser_name)
+        logger.setLevel(logging.DEBUG)
+
+        file_handler = logging.FileHandler(
+            f"{self.base_path}/logs/{self.parser_name}_pipeline/logfile.log"
+        )
+        file_handler.setLevel(logging.DEBUG)
+
+        formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
+        file_handler.setFormatter(formatter)
+
+        logger.addHandler(file_handler)
+        return logger
 
     def get_files(self, glob_string="*"):
         glob_path = self.datalake_path / "unprocessed" / glob_string

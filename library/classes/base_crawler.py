@@ -56,10 +56,19 @@ class BaseCrawler:
             self.logger.error(f"Driver window was already closed when exiting class.")
 
     def get_logger(self):
-        logging.basicConfig(
-            level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
+        logger = logging.getLogger(self.crawler_name)
+        logger.setLevel(logging.DEBUG)
+
+        file_handler = logging.FileHandler(
+            f"{self.base_path}/logs/{self.crawler_name}_pipeline/logfile.log"
         )
-        return logging.getLogger(self.crawler_name)
+        file_handler.setLevel(logging.DEBUG)
+
+        formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
+        file_handler.setFormatter(formatter)
+
+        logger.addHandler(file_handler)
+        return logger
 
     def initialize_driver(self, headless=True):
         firefox_service = Service(
