@@ -2,7 +2,6 @@ from library.classes.base_crawler import BaseCrawler
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.by import By
 import pathlib
-import datetime
 
 
 class ProFootballRefPlayersCrawler(BaseCrawler):

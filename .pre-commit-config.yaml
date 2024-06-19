@@ -24,3 +24,9 @@ repos:
     hooks:
       - id: pyupgrade
         args: ["--py39-plus"]
+
+  - repo: https://github.com/myint/autoflake
+    rev: v1.4  # Use the latest version available
+    hooks:
+      - id: autoflake
+        args: [ "--remove-all-unused-imports", "--in-place" ]
