@@ -15,7 +15,6 @@ class ProFootballRefPlayersParser(BaseParser):
         )
         self.soup = None
         self.soup_str = None
-        self.logger = self.get_logger()
         self.fieldnames = [
             "id",
             "name",

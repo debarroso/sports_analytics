@@ -14,7 +14,6 @@ class ProFootballRefGamesParser(BaseParser):
         self.game_id = None
         self.soup = None
         self.soup_str = None
-        self.logger = self.get_logger()
         self.data = {
             "game_details": [],
             "team_stats": [],

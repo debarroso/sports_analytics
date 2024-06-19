@@ -9,7 +9,6 @@ class EspnLiveDraftTrendsParser(BaseParser):
         super().__init__(
             parser_path=pathlib.Path(__file__).parent.resolve(), glob_string=glob_string
         )
-        self.logger = self.get_logger()
         self.data = []
 
     def parse(self):

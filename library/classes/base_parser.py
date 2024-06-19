@@ -11,6 +11,7 @@ class BaseParser:
         self.base_path = pathlib.Path(__file__).parents[2].resolve()
         self.parser_path = parser_path
         self.parser_name = parser_path.parts[-1]
+        self.logger = self.get_logger()
         self.datalake_path = pathlib.Path(
             str(self.parser_path)
             .replace("web_scraping", "datalake")
