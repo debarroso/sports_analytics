@@ -577,7 +577,7 @@ class ProFootballRefGamesParser(BaseParser):
         basic_table = tables[0].iloc[:, slice_dict[stat_type]]
         basic_table.columns = basic_table.columns.map("_".join).str.strip("_")
         basic_table = basic_table.rename(columns=basic_columns_dict[stat_type])
-        basic_table = basic_table.applymap(self.flatten_links)
+        basic_table = basic_table.map(self.flatten_links)
         for column in basic_columns_to_convert_dict[stat_type]:
             basic_table[column] = basic_table[column].apply(
                 pd.to_numeric, errors="coerce"
@@ -609,7 +609,7 @@ class ProFootballRefGamesParser(BaseParser):
         if len(tables) == 1:
             return
 
-        advanced_table = tables[1].applymap(self.flatten_links)
+        advanced_table = tables[1].map(self.flatten_links)
         advanced_table = advanced_table.rename(columns=advanced_columns_dict[stat_type])
 
         for column in advanced_columns_to_convert_dict[stat_type]:

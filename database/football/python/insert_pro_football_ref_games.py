@@ -11,7 +11,7 @@ db_config = {
     "port": 5432,  # default port for PostgreSQL
 }
 delimiter = "\\" if platform.system() == "Windows" else "/"
-schema = "pro_football_ref_games_parsed"
+schema = "pro_football_ref_games"
 datalake_path = str(pathlib.Path(__file__).parent.parent.parent.resolve()).replace(
     "database", "datalake"
 )
