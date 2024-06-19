@@ -1,15 +1,10 @@
+from library.classes.base_parser import BaseParser
 from datetime import datetime
 import pandas as pd
 import pathlib
 import time
 import csv
-import sys
 import re
-
-
-project_path = pathlib.Path(__file__).resolve().parents[4]
-sys.path.append(f"{project_path}/")
-from library.classes.base_parser import BaseParser
 
 
 class ProFootballRefPlayersParser(BaseParser):

@@ -1,12 +1,7 @@
+from library.classes.base_crawler import BaseCrawler
 from selenium.webdriver.common.by import By
 import pathlib
 import datetime
-import sys
-
-
-project_path = pathlib.Path(__file__).resolve().parents[4]
-sys.path.append(f"{project_path}/")
-from library.classes.base_crawler import BaseCrawler
 
 
 class ProFootballRefGamesCrawler(BaseCrawler):

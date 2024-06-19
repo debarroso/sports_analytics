@@ -1,12 +1,8 @@
+from library.classes.base_parser import BaseParser
 from io import StringIO
 import pandas as pd
 import pathlib
 import time
-import sys
-
-project_path = pathlib.Path(__file__).resolve().parents[4]
-sys.path.append(f"{project_path}/")
-from library.classes.base_parser import BaseParser
 
 
 class ProFootballRefGamesParser(BaseParser):
