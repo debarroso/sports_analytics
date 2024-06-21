@@ -66,9 +66,13 @@ class BaseCrawler:
         logger = logging.getLogger(self.crawler_name)
         logger.setLevel(logging.DEBUG)
 
-        file_handler = logging.FileHandler(
-            f"{self.base_path}/logs/{self.crawler_name}_pipeline/logfile.log"
+        log_file_path = (
+            self.base_path / "logs" / f"{self.crawler_name}_pipeline" / "logfile.log"
         )
+        if not log_file_path.exists():
+            log_file_path.touch()
+
+        file_handler = logging.FileHandler(str(log_file_path))
         file_handler.setLevel(logging.DEBUG)
 
         formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
