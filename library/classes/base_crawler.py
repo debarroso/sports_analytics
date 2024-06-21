@@ -61,6 +61,9 @@ class BaseCrawler:
             self.driver.close()
         except NoSuchWindowException:
             self.logger.error(f"Driver window was already closed when exiting class.")
+        except Exception as e:
+            self.logger.error(str(e))
+            raise e
 
     def get_logger(self):
         logger = logging.getLogger(self.crawler_name)
