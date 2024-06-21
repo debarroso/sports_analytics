@@ -69,6 +69,7 @@ class BaseCrawler:
         log_file_path = (
             self.base_path / "logs" / f"{self.crawler_name}_pipeline" / "logfile.log"
         )
+        log_file_path.parent.mkdir(parents=True, exist_ok=True)
         if not log_file_path.exists():
             log_file_path.touch()
 
