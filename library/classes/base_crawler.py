@@ -66,24 +66,18 @@ class BaseCrawler:
             raise e
 
     def get_logger(self):
-        logger = logging.getLogger(self.crawler_name)
-        logger.setLevel(logging.DEBUG)
-
-        log_file_path = (
-            self.base_path / "logs" / f"{self.crawler_name}_pipeline" / "logfile.log"
+        logging.basicConfig(
+            filename=str(
+                self.base_path
+                / "logs"
+                / f"{self.crawler_name}_pipeline"
+                / "logfile.log"
+            ),
+            filemode="a",
+            level=logging.INFO,
+            format="%(asctime)s - %(levelname)s - %(message)s",
         )
-        log_file_path.parent.mkdir(parents=True, exist_ok=True)
-        if not log_file_path.exists():
-            log_file_path.touch()
-
-        file_handler = logging.FileHandler(str(log_file_path))
-        file_handler.setLevel(logging.DEBUG)
-
-        formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
-        file_handler.setFormatter(formatter)
-
-        logger.addHandler(file_handler)
-        return logger
+        return logging.getLogger(self.crawler_name)
 
     def initialize_driver(self, headless=True):
         self.logger.info("Initializing selenium webdriver")
