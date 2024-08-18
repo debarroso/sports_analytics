@@ -30,7 +30,6 @@ class EspnLiveDraftTrendsCrawler(BaseCrawler):
         rankings = []
         count = 1
         while next_button.is_enabled():
-            self.logger.debug(f"Scraping data from page {count}")
             rankings += self.get_table_stats()
 
             count += 1

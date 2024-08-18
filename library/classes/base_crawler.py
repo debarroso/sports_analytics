@@ -67,12 +67,7 @@ class BaseCrawler:
 
     def get_logger(self):
         logging.basicConfig(
-            filename=str(
-                self.base_path
-                / "logs"
-                / f"{self.crawler_name}_pipeline"
-                / "logfile.log"
-            ),
+            filename=str(self.base_path / "logs" / f"{self.crawler_name}_pipeline.log"),
             filemode="a",
             level=logging.INFO,
             format="%(asctime)s - %(levelname)s - %(message)s",

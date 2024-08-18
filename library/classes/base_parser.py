@@ -27,9 +27,7 @@ class BaseParser:
 
     def get_logger(self):
         logging.basicConfig(
-            filename=str(
-                self.base_path / "logs" / f"{self.parser_name}_pipeline" / "logfile.log"
-            ),
+            filename=str(self.base_path / "logs" / f"{self.parser_name}_pipeline.log"),
             filemode="a",
             level=logging.INFO,
             format="%(asctime)s - %(levelname)s - %(message)s",
