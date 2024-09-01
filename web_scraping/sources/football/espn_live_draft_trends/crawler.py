@@ -1,8 +1,9 @@
+from selenium.webdriver.support import expected_conditions as ec
+from selenium.webdriver.support.wait import WebDriverWait
 from library.classes.base_crawler import BaseCrawler
 from selenium.webdriver.common.by import By
 import datetime
 import pathlib
-import time
 import csv
 
 
@@ -21,27 +22,27 @@ class EspnLiveDraftTrendsCrawler(BaseCrawler):
     def crawl(self):
         self.logger.info(f"Crawling source: {self.source_url}")
         self.driver.get(self.source_url)
-        time.sleep(10)
+
+        # wait until table content loads/ is clickable
+        WebDriverWait(self.driver, 60).until(
+            ec.element_to_be_clickable((By.CLASS_NAME, "Table__TBODY"))
+        )
 
         nav = self.driver.find_elements(By.TAG_NAME, "nav")
         buttons = nav[2].find_elements(By.TAG_NAME, "button")
         next_button = buttons[1]
 
         rankings = []
-        count = 1
-        while next_button.is_enabled():
-            rankings += self.get_table_stats()
 
-            count += 1
-            if count > 10:
-                break
+        for page_number in range(1, 11):
+            rankings += self.get_table_stats(page_number)
 
-            next_button.click()
-            self.random_sleep(ranges=[(5, 7), (7, 11), (11, 20)])
+            if page_number < 10:
+                next_button.click()
 
         self.data = rankings
 
-    def get_table_stats(self):
+    def get_table_stats(self, page_number):
         header_dict = {
             0: "rank",
             1: "player",
@@ -54,15 +55,26 @@ class EspnLiveDraftTrendsCrawler(BaseCrawler):
 
         table = self.driver.find_element(By.TAG_NAME, "tbody")
         rankings = []
+        rows = table.find_elements(By.TAG_NAME, "tr")
 
-        for row in table.find_elements(By.TAG_NAME, "tr"):
-            row_dict = {}
-            elements = row.find_elements(By.TAG_NAME, "td")
+        # validate that the rank is correct for the page number if not, sleep and try again
+        attempt = 0
+        while rows[0].find_elements(By.TAG_NAME, "td")[0].text != str(
+            (page_number - 1) * 50 + 1
+        ):
+            self.random_sleep()
+            rows = table.find_elements(By.TAG_NAME, "tr")
+            attempt += 1
 
-            count = 0
-            for element in elements:
-                row_dict[header_dict[count]] = element.text
-                count += 1
+            if attempt == 3:
+                self.logger.error("Slept 3 times but rank hasn't loaded. Exiting...")
+                raise Exception()
+
+        for row in rows:
+            row_dict = {
+                header_dict[i]: element.text
+                for i, element in enumerate(row.find_elements(By.TAG_NAME, "td"))
+            }
 
             rankings.append(row_dict)
 
@@ -90,10 +102,10 @@ class EspnLiveDraftTrendsCrawler(BaseCrawler):
             csv_writer.writeheader()
 
             for row in self.data:
-                player_string = row["player"]
-                row["player"] = player_string.split("\n")[0]
-                row["team"] = player_string.split("\n")[-2]
-                row["position"] = player_string.split("\n")[-1]
+                player_string_split = row["player"].split("\n")
+                row["player"] = player_string_split[0]
+                row["team"] = player_string_split[-2]
+                row["position"] = player_string_split[-1]
 
                 csv_writer.writerow(row)
 
