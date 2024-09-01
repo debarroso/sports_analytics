@@ -4,6 +4,7 @@ from library.classes.base_crawler import BaseCrawler
 from selenium.webdriver.common.by import By
 import datetime
 import pathlib
+import time
 import csv
 
 
@@ -113,6 +114,8 @@ class EspnLiveDraftTrendsCrawler(BaseCrawler):
 
 
 if __name__ == "__main__":
+    run_start = time.perf_counter()
     with EspnLiveDraftTrendsCrawler(headless=False) as crawler:
         crawler.crawl()
         crawler.save_to_datalake()
+        crawler.logger.info(f"Total run time = {time.perf_counter() - run_start}")
