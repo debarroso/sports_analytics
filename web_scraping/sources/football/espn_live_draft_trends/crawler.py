@@ -28,6 +28,7 @@ class EspnLiveDraftTrendsCrawler(BaseCrawler):
             ec.element_to_be_clickable((By.CLASS_NAME, "Table__TBODY"))
         )
 
+        # get next page button
         nav = self.driver.find_elements(By.TAG_NAME, "nav")
         buttons = nav[2].find_elements(By.TAG_NAME, "button")
         next_button = buttons[1]
@@ -66,6 +67,7 @@ class EspnLiveDraftTrendsCrawler(BaseCrawler):
             rows = table.find_elements(By.TAG_NAME, "tr")
             attempt += 1
 
+            # if we tried 3 times, something's wrong, raise an exception
             if attempt == 3:
                 self.logger.error("Slept 3 times but rank hasn't loaded. Exiting...")
                 raise Exception()
