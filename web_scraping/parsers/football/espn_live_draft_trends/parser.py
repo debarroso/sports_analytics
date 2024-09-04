@@ -34,4 +34,4 @@ if __name__ == "__main__":
     parser = EspnLiveDraftTrendsParser()
     parser.parse()
     parser.save_parsed_data()
-    parser.logger.info(f"Total run time = {time.perf_counter() - run_start}")
+    parser.logger.info(f"Parse run time = {time.perf_counter() - run_start}")

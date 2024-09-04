@@ -118,4 +118,4 @@ if __name__ == "__main__":
     with EspnLiveDraftTrendsCrawler(headless=False) as crawler:
         crawler.crawl()
         crawler.save_to_datalake()
-        crawler.logger.info(f"Total run time = {time.perf_counter() - run_start}")
+        crawler.logger.info(f"Crawl run time = {time.perf_counter() - run_start}")
