@@ -78,7 +78,6 @@ class EspnLiveDraftTrendsCrawler(BaseCrawler):
                 header_dict[i]: element.text
                 for i, element in enumerate(row.find_elements(By.TAG_NAME, "td"))
             }
-
             rankings.append(row_dict)
 
         return rankings
