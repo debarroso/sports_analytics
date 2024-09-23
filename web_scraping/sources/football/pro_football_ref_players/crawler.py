@@ -1,3 +1,5 @@
+import time
+
 from library.classes.base_crawler import BaseCrawler
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.by import By
@@ -29,27 +31,27 @@ class ProFootballRefPlayersCrawler(BaseCrawler):
 
         sql_query = f"""
             select distinct player from (
-                select player from pro_football_ref_games_parsed.receiving_stats_advanced
+                select player from pro_football_ref_games.receiving_stats_advanced
                 union all
-                select player from pro_football_ref_games_parsed.return_stats
+                select player from pro_football_ref_games.return_stats
                 union all
-                select player from pro_football_ref_games_parsed.fumble_stats
+                select player from pro_football_ref_games.fumble_stats
                 union all
-                select player from pro_football_ref_games_parsed.rushing_stats_basic
+                select player from pro_football_ref_games.rushing_stats_basic
                 union all
-                select player from pro_football_ref_games_parsed.rushing_stats_advanced
+                select player from pro_football_ref_games.rushing_stats_advanced
                 union all
-                select player from pro_football_ref_games_parsed.receiving_stats_basic
+                select player from pro_football_ref_games.receiving_stats_basic
                 union all
-                select player from pro_football_ref_games_parsed.defense_stats_advanced
+                select player from pro_football_ref_games.defense_stats_advanced
                 union all
-                select player from pro_football_ref_games_parsed.defense_stats_basic
+                select player from pro_football_ref_games.defense_stats_basic
                 union all
-                select player from pro_football_ref_games_parsed.passing_stats_basic
+                select player from pro_football_ref_games.passing_stats_basic
                 union all
-                select player from pro_football_ref_games_parsed.passing_stats_advanced
+                select player from pro_football_ref_games.passing_stats_advanced
                 union all
-                select player from pro_football_ref_games_parsed.kicking_stats
+                select player from pro_football_ref_games.kicking_stats
             ) as t;
         """
 
@@ -95,6 +97,8 @@ class ProFootballRefPlayersCrawler(BaseCrawler):
 
 
 if __name__ == "__main__":
+    run_start = time.perf_counter()
     with ProFootballRefPlayersCrawler() as crawler:
         crawler.crawl()
         crawler.save_to_datalake()
+        crawler.logger.info(f"Crawl run time = {time.perf_counter() - run_start}")

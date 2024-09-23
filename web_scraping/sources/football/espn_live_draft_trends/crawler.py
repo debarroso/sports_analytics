@@ -114,7 +114,7 @@ class EspnLiveDraftTrendsCrawler(BaseCrawler):
 
 if __name__ == "__main__":
     run_start = time.perf_counter()
-    with EspnLiveDraftTrendsCrawler(headless=False) as crawler:
+    with EspnLiveDraftTrendsCrawler() as crawler:
         crawler.crawl()
         crawler.save_to_datalake()
         crawler.logger.info(f"Crawl run time = {time.perf_counter() - run_start}")
