@@ -1,9 +1,8 @@
-import time
-
 from library.classes.base_crawler import BaseCrawler
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.by import By
 import pathlib
+import time
 
 
 class ProFootballRefPlayersCrawler(BaseCrawler):
@@ -29,31 +28,9 @@ class ProFootballRefPlayersCrawler(BaseCrawler):
         # get cursor for db
         cursor = self.db_connection.cursor()
 
-        sql_query = f"""
-            select distinct player from (
-                select player from pro_football_ref_games.receiving_stats_advanced
-                union all
-                select player from pro_football_ref_games.return_stats
-                union all
-                select player from pro_football_ref_games.fumble_stats
-                union all
-                select player from pro_football_ref_games.rushing_stats_basic
-                union all
-                select player from pro_football_ref_games.rushing_stats_advanced
-                union all
-                select player from pro_football_ref_games.receiving_stats_basic
-                union all
-                select player from pro_football_ref_games.defense_stats_advanced
-                union all
-                select player from pro_football_ref_games.defense_stats_basic
-                union all
-                select player from pro_football_ref_games.passing_stats_basic
-                union all
-                select player from pro_football_ref_games.passing_stats_advanced
-                union all
-                select player from pro_football_ref_games.kicking_stats
-            ) as t;
-        """
+        sql_query_path = self.base_path / "database" / "queries" / self.crawler_name / "get_all_players.sql"
+        with sql_query_path.open(mode="r") as f:
+            sql_query = f.read()
 
         cursor.execute(sql_query)
         results = cursor.fetchall()

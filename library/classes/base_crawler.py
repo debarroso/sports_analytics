@@ -66,8 +66,13 @@ class BaseCrawler:
             raise e
 
     def get_logger(self):
+        file_path = self.base_path / "logs" / f"{self.crawler_name}_pipeline.log"
+        if not file_path.exists():
+            file_path.parent.mkdir(parents=True, exist_ok=True)
+            file_path.touch()
+
         logging.basicConfig(
-            filename=str(self.base_path / "logs" / f"{self.crawler_name}_pipeline.log"),
+            filename=str(file_path),
             filemode="a",
             level=logging.INFO,
             format="%(asctime)s - %(levelname)s - %(message)s",

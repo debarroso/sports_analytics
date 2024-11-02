@@ -1,9 +1,8 @@
-import time
-
 from library.classes.base_crawler import BaseCrawler
 from selenium.webdriver.common.by import By
-import pathlib
 import datetime
+import pathlib
+import time
 
 
 class ProFootballRefGamesCrawler(BaseCrawler):
