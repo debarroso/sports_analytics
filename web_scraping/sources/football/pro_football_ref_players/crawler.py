@@ -18,8 +18,8 @@ class ProFootballRefPlayersCrawler(BaseCrawler):
         self.db_connection = self.get_postgres_connection(
             **{
                 "dbname": "nfl_statistics",
-                "host": "localhost",  # or your database host
-                "port": 5432,  # default port for PostgreSQL
+                "host": "localhost",
+                "port": 5432,
             }
         )
 
@@ -51,7 +51,6 @@ class ProFootballRefPlayersCrawler(BaseCrawler):
                 continue
 
             self.logger.info(f"Getting player page at: {self.source_url}{link}")
-            self.random_sleep()
             self.driver.get(f"{self.source_url}{link}")
 
             try:

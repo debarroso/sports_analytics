@@ -1,4 +1,5 @@
 from selenium.common.exceptions import NoSuchWindowException
+from selenium.common.exceptions import WebDriverException
 from selenium.webdriver.firefox.options import Options
 from selenium.webdriver.firefox.service import Service
 from selenium import webdriver
@@ -25,6 +26,7 @@ class BaseCrawler:
         self.crawler_path = crawler_path
         self.crawler_name = crawler_path.parts[-1]
         self.crawler_class = crawler_class
+
         self.datalake_path = pathlib.Path(
             str(self.crawler_path).replace("web_scraping", "datalake")
         )
@@ -42,15 +44,6 @@ class BaseCrawler:
         self.processed_path = self.datalake_path / "processed"
         self.processed_path.mkdir(parents=True, exist_ok=True)
 
-        self.geckodriver_executable = (
-            "geckodriver.exe" if platform.system() == "Windows" else "geckodriver"
-        )
-        self.geckodriver_path = (
-            self.web_scraping_tools_path / "selenium" / self.geckodriver_executable
-        )
-        self.driver_logs_path = (
-            self.web_scraping_tools_path / "selenium" / "geckodriver.log"
-        )
         self.driver = self.initialize_driver(headless=self.headless)
 
     def __enter__(self):
@@ -59,6 +52,9 @@ class BaseCrawler:
     def __exit__(self, exc_type, exc_value, traceback):
         try:
             self.driver.close()
+            self.logger.info(
+                f"---------- Completed run of {self.crawler_class} at {datetime.datetime.now()} ----------"
+            )
         except NoSuchWindowException:
             self.logger.error(f"Driver window was already closed when exiting class.")
         except Exception as e:
@@ -80,10 +76,14 @@ class BaseCrawler:
         return logging.getLogger(self.crawler_name)
 
     def initialize_driver(self, headless=True):
+        geckodriver_executable = "geckodriver.exe" if platform.system() == "Windows" else "geckodriver"
+        geckodriver_path = self.web_scraping_tools_path / "selenium" / geckodriver_executable
+        driver_logs_path = self.web_scraping_tools_path / "selenium" / "geckodriver.log"
+
         self.logger.info("Initializing selenium webdriver")
         firefox_service = Service(
-            executable_path=str(self.geckodriver_path),
-            log_path=str(self.driver_logs_path),
+            executable_path=str(geckodriver_path),
+            log_path=str(driver_logs_path),
         )
 
         firefox_options = Options()
@@ -93,21 +93,28 @@ class BaseCrawler:
         firefox_options.add_argument("-private")
 
         if platform.system() == "Windows":
-            user_agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:125.0) Gecko/20100101 Firefox/125.0"
+            user_agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:133.0) Gecko/20100101 Firefox/133.0"
             firefox_options.set_preference("general.useragent.override", user_agent)
         elif platform.system() == "Darwin":
             user_agent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:125.0) Gecko/20100101 Firefox/125.0"
             firefox_options.set_preference("general.useragent.override", user_agent)
 
-        driver = webdriver.Firefox(options=firefox_options, service=firefox_service)
-        driver.install_addon(
-            str(
-                self.web_scraping_tools_path / "selenium" / "extensions" / "uBlock0.xpi"
-            )
-        )
+        for attempt in range(1, 4):
+            try:
+                driver = webdriver.Firefox(options=firefox_options, service=firefox_service)
+                driver.install_addon(
+                    str(
+                        self.web_scraping_tools_path / "selenium" / "extensions" / "uBlock0.xpi"
+                    )
+                )
+                driver.maximize_window()
+                return driver
 
-        driver.maximize_window()
-        return driver
+            except WebDriverException as e:
+                if attempt == 3:
+                    self.logger.error("Failed to initialize driver after 3 attempts")
+                    self.logger.error(str(e))
+                    raise e
 
     @staticmethod
     def random_sleep(ranges=None, weights=None):
@@ -115,7 +122,7 @@ class BaseCrawler:
             weights = [0.3, 0.6, 0.1]
 
         if ranges is None:
-            ranges = [(3, 7), (7, 11), (11, 20)]
+            ranges = [(3, 5), (5, 8), (8, 12)]
 
         selected_range = random.choices(ranges, weights=weights, k=1)[0]
         sleep_time = random.uniform(*selected_range)

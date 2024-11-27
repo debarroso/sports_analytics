@@ -58,7 +58,6 @@ class ProFootballRefGamesCrawler(BaseCrawler):
                 continue
 
             self.logger.info(f"Getting game source for: {link}")
-            self.random_sleep()
             self.driver.get(link)
             self.logger.info(f"Saving {file_name} to datalake")
 
@@ -70,7 +69,7 @@ class ProFootballRefGamesCrawler(BaseCrawler):
 
 if __name__ == "__main__":
     run_start = time.perf_counter()
-    with ProFootballRefGamesCrawler() as crawler:
+    with ProFootballRefGamesCrawler(headless=False) as crawler:
         crawler.crawl()
         crawler.save_to_datalake()
         crawler.logger.info(f"Crawl run time = {time.perf_counter() - run_start}")
