@@ -76,8 +76,12 @@ class BaseCrawler:
         return logging.getLogger(self.crawler_name)
 
     def initialize_driver(self, headless=True):
-        geckodriver_executable = "geckodriver.exe" if platform.system() == "Windows" else "geckodriver"
-        geckodriver_path = self.web_scraping_tools_path / "selenium" / geckodriver_executable
+        geckodriver_executable = (
+            "geckodriver.exe" if platform.system() == "Windows" else "geckodriver"
+        )
+        geckodriver_path = (
+            self.web_scraping_tools_path / "selenium" / geckodriver_executable
+        )
         driver_logs_path = self.web_scraping_tools_path / "selenium" / "geckodriver.log"
 
         self.logger.info("Initializing selenium webdriver")
@@ -101,10 +105,15 @@ class BaseCrawler:
 
         for attempt in range(1, 4):
             try:
-                driver = webdriver.Firefox(options=firefox_options, service=firefox_service)
+                driver = webdriver.Firefox(
+                    options=firefox_options, service=firefox_service
+                )
                 driver.install_addon(
                     str(
-                        self.web_scraping_tools_path / "selenium" / "extensions" / "uBlock0.xpi"
+                        self.web_scraping_tools_path
+                        / "selenium"
+                        / "extensions"
+                        / "uBlock0.xpi"
                     )
                 )
                 driver.maximize_window()
@@ -150,7 +159,7 @@ class BaseCrawler:
                 if time.perf_counter() - start > scroll_duration:
                     break
 
-    def download_raw_http_source(
+    def download_url_content(
         self,
         url="",
         save_destination=pathlib.Path(__file__).parents[2].resolve(),

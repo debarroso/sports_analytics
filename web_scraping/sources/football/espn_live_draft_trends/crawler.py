@@ -36,7 +36,6 @@ class EspnLiveDraftTrendsCrawler(BaseCrawler):
         next_button = buttons[1]
 
         rankings = []
-
         for page_number in range(1, 11):
             rankings += self.get_table_stats()
 
@@ -47,7 +46,7 @@ class EspnLiveDraftTrendsCrawler(BaseCrawler):
 
     def get_table_stats(self):
         self.random_sleep()
-        self.scroll_page_down(scroll_length=2)
+        self.scroll_page_down(scroll_length=4)
         header_keys = [
             "rank",
             "player",
@@ -74,8 +73,8 @@ class EspnLiveDraftTrendsCrawler(BaseCrawler):
             else:
                 cache_values.add(row_cache)
             rankings.append(row_dict)
-            self.logger.debug(row_dict)
 
+        # if there's a duplicate entry, the page hasn't finished loading. try again.
         if len(rankings) != len(rows):
             return self.get_table_stats()
         else:

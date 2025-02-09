@@ -25,10 +25,15 @@ class ProFootballRefPlayersCrawler(BaseCrawler):
 
     def crawl(self):
         self.logger.info(f"Querying postgres for unique players")
-        # get cursor for db
         cursor = self.db_connection.cursor()
 
-        sql_query_path = self.base_path / "database" / "queries" / self.crawler_name / "get_all_players.sql"
+        sql_query_path = (
+            self.base_path
+            / "database"
+            / "queries"
+            / self.crawler_name
+            / "get_all_players.sql"
+        )
         with sql_query_path.open(mode="r") as f:
             sql_query = f.read()
 
