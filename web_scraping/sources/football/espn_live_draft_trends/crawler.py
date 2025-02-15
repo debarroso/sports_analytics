@@ -46,7 +46,7 @@ class EspnLiveDraftTrendsCrawler(BaseCrawler):
 
     def get_table_stats(self):
         self.random_sleep()
-        self.scroll_page_down(scroll_length=4)
+        self.scroll_page_down(scroll_length=2)
         header_keys = [
             "rank",
             "player",
