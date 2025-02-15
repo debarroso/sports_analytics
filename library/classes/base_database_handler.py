@@ -16,7 +16,6 @@ class BaseDatabaseHandler:
 
         self.handler_path = handler_path
         self.handler_name = handler_path.parts[-1]
-        self.logger = self.get_logger()
 
         self.db_name = db_name
         self.schema = schema
@@ -32,6 +31,7 @@ class BaseDatabaseHandler:
         )
 
         self.table_name = None
+        self.logger = self.get_logger()
 
     def get_logger(self):
         file_path = self.base_path / "logs" / f"{self.handler_name}_pipeline.log"
@@ -49,20 +49,6 @@ class BaseDatabaseHandler:
 
     def connect_to_database(self):
         return psycopg2.connect(**self.db_config)
-
-    def upload_parsed_data(self, csv_list=None):
-        if csv_list is None:
-            csv_list = self.get_parsed_csv_files()
-
-        if len(csv_list) == 0:
-            self.logger.info("No new files found in datalake")
-            return
-
-        self.upload_csv_files(csv_list)
-
-        # making it here assumes successful upload, delete these files now
-        for csv_file in csv_list:
-            pathlib.Path(csv_file).unlink()
 
     def get_parsed_csv_files(self):
         return glob.glob(str(self.datalake_parsed_path / "*"))
@@ -93,3 +79,17 @@ class BaseDatabaseHandler:
         self.logger.info(
             f"CSV for {self.table_name} has been inserted into the database."
         )
+
+    def upload_parsed_data(self, csv_list=None):
+        if csv_list is None:
+            csv_list = self.get_parsed_csv_files()
+
+        if len(csv_list) == 0:
+            self.logger.info("No new files found in datalake")
+            return
+
+        self.upload_csv_files(csv_list)
+
+        # making it here assumes successful upload, delete these files now
+        for csv_file in csv_list:
+            pathlib.Path(csv_file).unlink()

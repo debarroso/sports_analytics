@@ -52,7 +52,6 @@ class BaseCrawler:
     def __exit__(self, exc_type, exc_value, traceback):
         try:
             self.driver.close()
-            self.logger.info(f"Crawler completed at {datetime.datetime.now()}")
         except NoSuchWindowException:
             self.logger.error(f"Driver window was already closed when exiting class.")
         except Exception as e:
