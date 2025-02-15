@@ -1,4 +1,5 @@
 import psycopg2
+import datetime
 import pathlib
 import logging
 import glob
@@ -6,7 +7,7 @@ import csv
 
 
 class BaseDatabaseHandler:
-    def __init__(self, handler_path, db_name, schema, db_config=None):
+    def __init__(self, handler_path, handler_class, db_name, schema, db_config=None):
         if db_config is None:
             db_config = {
                 "dbname": db_name,
@@ -15,6 +16,7 @@ class BaseDatabaseHandler:
             }
 
         self.handler_path = handler_path
+        self.handler_class = handler_class
         self.handler_name = handler_path.parts[-1]
 
         self.db_name = db_name
@@ -32,6 +34,9 @@ class BaseDatabaseHandler:
 
         self.table_name = None
         self.logger = self.get_logger()
+        self.logger.info(
+            f"---------- Beginning run of {self.handler_class} at {datetime.datetime.now()} ----------"
+        )
 
     def get_logger(self):
         file_path = self.base_path / "logs" / f"{self.handler_name}_pipeline.log"
