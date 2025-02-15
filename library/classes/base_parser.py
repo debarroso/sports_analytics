@@ -1,4 +1,5 @@
 from bs4 import BeautifulSoup
+import datetime
 import pathlib
 import logging
 import glob
@@ -7,11 +8,11 @@ import os
 
 class BaseParser:
 
-    def __init__(self, parser_path, glob_string="*"):
+    def __init__(self, parser_path, parser_class, glob_string="*"):
         self.base_path = pathlib.Path(__file__).parents[2].resolve()
         self.parser_path = parser_path
+        self.parser_class = parser_class
         self.parser_name = parser_path.parts[-1]
-        self.logger = self.get_logger()
         self.datalake_path = pathlib.Path(
             str(self.parser_path)
             .replace("web_scraping", "datalake")
@@ -20,8 +21,13 @@ class BaseParser:
         self.parsed_path = pathlib.Path(
             str(self.datalake_path).replace("sources", "parsed")
         )
+        self.logger = self.get_logger()
+        self.logger.info(
+            f"---------- Beginning run of {self.parser_class} at {datetime.datetime.now()} ----------"
+        )
         self.files = self.get_files(glob_string=glob_string)
         if len(self.files) == 0:
+            self.logger.info("No unprocessed files found, exiting...")
             exit()
         self.data = []
 

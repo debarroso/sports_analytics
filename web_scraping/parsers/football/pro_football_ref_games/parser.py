@@ -9,7 +9,9 @@ class ProFootballRefGamesParser(BaseParser):
 
     def __init__(self, glob_string="*"):
         super().__init__(
-            parser_path=pathlib.Path(__file__).parent.resolve(), glob_string=glob_string
+            parser_path=pathlib.Path(__file__).parent.resolve(),
+            parser_class=self.__class__.__name__,
+            glob_string=glob_string,
         )
         self.game_id = None
         self.soup = None
