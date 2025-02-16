@@ -1,0 +1,14 @@
+[
+  {
+    "name": "Load Espn Live Draft Trends",
+    "tags": [
+      "nfl",
+      "espn",
+      "fantasy"
+    ],
+    "parameters": {
+      "source_slug": "espn_live_draft_trends"
+    },
+    "cron": "0 9 * 4-9 *"
+  }
+]
