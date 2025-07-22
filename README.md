@@ -48,4 +48,4 @@ The `load_source_data_pipeline` consists of the following steps:
 
 3.  **Upload New Data**:
     -   Dynamically imports the relevant database handler from the `database` directory.
-    -   Uploads the parsed data to the database.
+    -   Uploads the parsed data to the database
